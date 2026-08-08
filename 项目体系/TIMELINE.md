@@ -122,3 +122,11 @@
 | 2026-08-08 | 会话6 | GitHub Actions配置 | 执行 | 写npm-publish.yml工作流（OIDC自动发布），待配trusted publisher后激活 | - | .github/workflows/ |
 | 2026-08-08 | 会话6 | token安全处理 | 执行 | npm/github/creem token全部合并到.env.aixx（gitignore保护），删除仓库外明文文件 | - | 全局npmrc已清空token |
 
+
+| 2026-08-08 | 会话6 | 🔥Claude/GPT/Grok调通 | 里程碑 | apiyi-Claude(type=14)+apiyi-GPT(type=1)+Grok(type=48)全部调通。AIXX模型层完整：国产4家+海外3家 | - | 7个渠道 |
+| 2026-08-08 | 会话6 | apiyi渠道配置 | 执行 | apiyi分两个渠道：GPT用OpenAI格式(type=1)，Claude用Anthropic格式(type=14)。base_url都是api.apiyi.com | - | Claude/GPT不能混在一个渠道 |
+| 2026-08-08 | 会话6 | 用户注册闭环 | 完成 | CLI install自动注册→拿key→装skill。后台开注册(限额100000)。新用户调deepseek-chat通过 | - | 0人工干预 |
+| 2026-08-08 | 会话6 | 哨兵bot上线 | 执行 | sentinel.py每60秒巡检，systemd服务运行，状态变化告警 | - | bot-01在岗 |
+| 2026-08-08 | 会话6 | 接入bot上线 | 执行 | integrator.py：add-channel/list-channels/gen-config三命令 | - | bot-02在岗 |
+| 2026-08-08 | 会话6 | 后台管理脚本 | 执行 | admin.sh：status/users/channels/quota/logs/restart/backup | - | 运维工具箱 |
+| 2026-08-08 | 会话6 | CLI 0.2.0发布 | 执行 | install加自动注册，npm已发布aixx-cli@0.2.0 | - | npx aixx-cli |
