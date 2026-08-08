@@ -19,6 +19,9 @@ import { showHelp, showVersion } from '../src/commands/help.js';
 const VERSION = '0.1.0';
 
 // 默认AIXX后端地址
+// ⚠️ 安全警告：当前用HTTP明文传输API Key（http://），存在凭据被嗅探风险。
+// TODO（安全）：后端配置好HTTPS证书后，把下面的 URL 改为 'https://14.103.27.195:8080/v1'。
+// 改完后请全局搜索 "安全警告" 同步更新 env.js 与 templates/QUICKSTART.md 中的同名地址。
 export const DEFAULT_BASE_URL = 'http://14.103.27.195:8080/v1';
 
 async function main() {

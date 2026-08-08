@@ -8,8 +8,8 @@
  * 注：templates/目录在发布时一起打包进npm包
  */
 
-import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'fs';
+import { join, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -101,18 +101,32 @@ export async function downloadSkill(targetDir) {
     mkdirSync(targetDir, { recursive: true });
   }
 
-  // 优先从templates目录复制（完整版skill）
+  // 优先从templates目录复制（完整版skill，支持子目录递归，如 references/）
   const templatesDir = join(__dirname, '..', '..', 'templates');
   let usedTemplates = false;
 
   if (existsSync(templatesDir)) {
-    const files = readdirSync(templatesDir);
-    for (const file of files) {
-      try {
-        copyFileSync(join(templatesDir, file), join(targetDir, file));
-        usedTemplates = true;
-      } catch (e) {
-        // 复制失败，回退到最小版
+    // 递归复制：templates/ 下的文件按相对路径镜像到 targetDir/
+    // 这样 references/chat.md 等子目录文件能正确落到 targetDir/references/chat.md
+    const stack = [templatesDir];
+    while (stack.length > 0) {
+      const current = stack.pop();
+      for (const entry of readdirSync(current)) {
+        const src = join(current, entry);
+        const rel = relative(templatesDir, src);
+        const dest = join(targetDir, rel);
+        try {
+          if (statSync(src).isDirectory()) {
+            if (!existsSync(dest)) mkdirSync(dest, { recursive: true });
+            stack.push(src);
+          } else {
+            mkdirSync(dirname(dest), { recursive: true });
+            copyFileSync(src, dest);
+            usedTemplates = true;
+          }
+        } catch (e) {
+          // 单个文件复制失败，继续尝试其他文件；最终若整体失败再回退到最小版
+        }
       }
     }
   }

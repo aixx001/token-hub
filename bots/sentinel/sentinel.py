@@ -25,11 +25,16 @@ from datetime import datetime
 # ============ 配置 ============
 NEWAPI_URL = "http://localhost:8080"
 ADMIN_USER = "root"
-ADMIN_PASS = os.environ.get("AIXX_ADMIN_PASS", "Aixx@2026!K8")
+ADMIN_PASS = os.environ.get("AIXX_ADMIN_PASS", "")
 CHECK_INTERVAL = 60  # 巡检间隔（秒）
 TIMEOUT = 10  # 单次ping超时（秒）
 STATE_FILE = "/opt/aixx/bots/sentinel/channel_states.json"
 LOG_FILE = "/opt/aixx/bots/logs/sentinel.log"
+
+# 启动前校验：缺环境变量拒绝启动
+if not ADMIN_PASS:
+    print("[ERROR] 未设置AIXX_ADMIN_PASS环境变量，拒绝启动", flush=True)
+    sys.exit(1)
 
 # ============ 工具函数 ============
 def log(msg, level="INFO"):
@@ -166,7 +171,10 @@ def main():
     # 定时循环
     while True:
         time.sleep(CHECK_INTERVAL)
-        run_check()
+        try:
+            run_check()
+        except Exception as e:
+            log(f"单次巡检失败（不影响bot运行）: {e}", "ERROR")
 
 if __name__ == "__main__":
     try:

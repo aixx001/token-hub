@@ -9,6 +9,8 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, appendFileSync } fr
 import { homedir } from 'os';
 import { join } from 'path';
 
+// ⚠️ 安全警告：当前用HTTP明文传输API Key（http://），存在凭据被嗅探风险。
+// TODO（安全）：后端配置好HTTPS证书后，把下面的 URL 改为 'https://14.103.27.195:8080/v1'。
 const DEFAULT_BASE_URL = 'http://14.103.27.195:8080/v1';
 
 export function setupEnv(apiKey, baseUrl = DEFAULT_BASE_URL) {

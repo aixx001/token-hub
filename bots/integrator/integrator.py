@@ -21,7 +21,10 @@ from datetime import datetime
 
 NEWAPI_URL = "http://localhost:8080"
 ADMIN_USER = "root"
-ADMIN_PASS = os.environ.get("AIXX_ADMIN_PASS", "Aixx@2026!K8")
+ADMIN_PASS = os.environ.get("AIXX_ADMIN_PASS", "")
+if not ADMIN_PASS:
+    print("[ERROR] 未设置AIXX_ADMIN_PASS环境变量，拒绝启动", flush=True)
+    sys.exit(1)
 
 # ============ 工具 ============
 def log(msg, level="INFO"):
@@ -140,13 +143,15 @@ def cmd_gen_config(args):
     agent_type = args[1]
     user_key = args[2] if len(args) > 2 else "sk-你的key"
     base_url = "http://14.103.27.195:8080/v1"
+    # Claude Code会自己补/v1/messages，base_url不能带/v1，否则变成/v1/v1/messages -> 404
+    anthropic_base_url = "http://14.103.27.195:8080"
 
     configs = {
         "claude-code": f"""# Claude Code 配置
 
 ## 方式1：环境变量（推荐）
 ```bash
-export ANTHROPIC_BASE_URL="{base_url}"
+export ANTHROPIC_BASE_URL="{anthropic_base_url}"
 export ANTHROPIC_AUTH_TOKEN="{user_key}"
 ```
 
@@ -155,7 +160,7 @@ export ANTHROPIC_AUTH_TOKEN="{user_key}"
 ```json
 {{
   "primaryApiKey": "{user_key}",
-  "apiBaseUrl": "{base_url}"
+  "apiBaseUrl": "{anthropic_base_url}"
 }}
 ```
 

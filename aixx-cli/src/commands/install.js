@@ -14,6 +14,7 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 import readline from 'readline';
+import { randomInt } from 'crypto';
 import { DEFAULT_BASE_URL } from '../../bin/aixx.js';
 import { downloadSkill } from '../utils/download.js';
 import { setupEnv } from '../utils/env.js';
@@ -35,19 +36,19 @@ async function ask(question) {
   return new Promise(resolve => rl.question(question, ans => { rl.close(); resolve(ans.trim()); }));
 }
 
-// 生成随机用户名（aixx_开头+随机6位）
+// 生成随机用户名（aixx_开头+随机8位）。用 CSPRNG 避免可预测。
 function genUsername() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let suffix = '';
-  for (let i = 0; i < 6; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 8; i++) suffix += chars[randomInt(0, chars.length)];
   return `aixx_${suffix}`;
 }
 
-// 生成随机密码
+// 生成随机密码（16位）。用 CSPRNG 保证密码学强度。
 function genPassword() {
   const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let pwd = '';
-  for (let i = 0; i < 16; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 16; i++) pwd += chars[randomInt(0, chars.length)];
   return pwd;
 }
 
@@ -62,7 +63,6 @@ async function autoRegister(baseUrl, refCode) {
   // 注册（带推荐码如果有）
   const regBody = { username, password };
   if (refCode) {
-    regCode = refCode;
     regBody.aff_code = refCode;
     console.log(`   推荐码: ${refCode}`);
   }

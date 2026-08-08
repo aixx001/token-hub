@@ -19,16 +19,15 @@ SSH_KEY="${HOME}/.ssh/aixx_key"
 SERVER="aixx@14.103.27.195"
 NEWAPI_URL="http://localhost:8080"
 ADMIN_USER="root"
-ADMIN_PASS="Aixx@2026!K8"
+ADMIN_PASS="${AIXX_ADMIN_PASS:-}"
+if [ -z "$ADMIN_PASS" ]; then
+    echo "❌ 未设置AIXX_ADMIN_PASS环境变量，拒绝执行" >&2
+    exit 1
+fi
 
 # 远程执行
 re() {
     ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$SERVER" "$1"
-}
-
-# 登录拿token
-get_token() {
-    re "curl -s -X POST $NEWAPI_URL/api/user/login -H 'Content-Type: application/json' -d '{\"username\":\"$ADMIN_USER\",\"password\":\"$ADMIN_PASS\"}' | python3 -c \"import sys,json; print(json.load(sys.stdin)['data']['access_token'])\""
 }
 
 # ============ 命令实现 ============
@@ -69,6 +68,8 @@ cmd_quota() {
         echo "例: quota testuser 1000000"
         return
     fi
+    [[ "$2" =~ ^[0-9]+$ ]] || { echo "❌ 额度必须是数字"; return 1; }
+    [[ "$1" =~ ^[a-zA-Z0-9_]+$ ]] || { echo "❌ 用户名含非法字符"; return 1; }
     re "sqlite3 /opt/aixx/new-api/one-api.db \"UPDATE users SET quota = quota + $2 WHERE username = '$1'; SELECT username, quota FROM users WHERE username='$1';\""
     echo "✅ 已给 $1 加 $2 额度"
 }
@@ -88,7 +89,7 @@ cmd_restart() {
 
 cmd_backup() {
     echo "=== 备份数据库 ==="
-    re "mkdir -p /opt/aixx/backup && cp /opt/aixx/new-api/one-api.db /opt/aixx/backup/one-api_\$(date +%Y%m%d_%H%M%S).db && echo '✅ 备份完成' && ls -la /opt/aixx/backup/ | tail -5"
+    re "mkdir -p /opt/aixx/backup && cd /opt/aixx/new-api && sqlite3 one-api.db \".backup /opt/aixx/backup/one-api_\$(date +%Y%m%d_%H%M%S).db\" && echo '✅ 备份完成' && ls -la /opt/aixx/backup/ | tail -5"
 }
 
 cmd_help() {
