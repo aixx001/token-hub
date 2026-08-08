@@ -1,0 +1,38 @@
+# ===== 敏感文件（绝不进git）=====
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+secrets/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# ===== IDE / 编辑器 =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 日志 / 缓存 =====
+*.log
+logs/
+.cache/
