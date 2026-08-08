@@ -1,0 +1,52 @@
+name: Publish AIXX CLI to npm
+
+# 触发条件：手动运行 或 push到master且改了aixx-cli
+on:
+  workflow_dispatch:
+    # 手动触发（在GitHub Actions页面点Run workflow）
+  push:
+    branches: [master]
+    paths:
+      - 'aixx-cli/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # OIDC发布必须的权限
+
+    steps:
+      - name: 拉代码
+        uses: actions/checkout@v4
+
+      - name: 配置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 检查是否需要发布
+        id: check
+        working-directory: aixx-cli
+        run: |
+          # 检查npm上是否已有这个版本
+          VERSION=$(node -p "require('./package.json').version")
+          NAME=$(node -p "require('./package.json').name")
+          if npm view $NAME@$VERSION > /dev/null 2>&1; then
+            echo "版本 $VERSION 已存在，跳过发布"
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "版本 $VERSION 未发布，准备发布"
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 发布到npm（OIDC trusted publisher）
+        if: steps.check.outputs.should_publish == 'true'
+        working-directory: aixx-cli
+        run: npm publish --access public --provenance
+        # --provenance 用OIDC发布，不需要token，绕过2FA
+
+      - name: 发布结果
+        if: steps.check.outputs.should_publish == 'true'
+        run: echo "✅ aixx-cli 已发布到npm"

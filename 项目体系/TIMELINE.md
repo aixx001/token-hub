@@ -7,7 +7,16 @@
 
 ## 🚀 下窗口第一件事（最新·失忆龙龙从这里开始）
 
-> **2026-08-08 会话6·1.0核心闭环跑通！DeepSeek/GLM/Kimi可调，CLI可用，待发布npm。**
+> **2026-08-08 会话6·AIXX正式面世！npx aixx-cli install 全网可用。**
+
+### 🎉🎉🎉 终极里程碑：AIXX上线npm
+
+```
+2026-08-08 22:00 - aixx-cli@0.1.0 发布到npm
+                   npx aixx-cli --version 返回 v0.1.0
+                   GitHub仓库建好：github.com/aixx001/token-hub
+                   → AIXX正式成为全网可用的产品
+```
 
 ### 🎉 重大里程碑：AIXX第一声啼哭
 ```
@@ -106,4 +115,10 @@
 | 2026-08-08 | 会话6 | AIXX CLI开发 | 开发 | 写完完整CLI（install/config/test/help命令+download/env工具）。本地测试全通过：version/help/config/test都正常 | - | aixx-cli/目录，待发布npm |
 | 2026-08-08 | 会话6 | CLI端到端测试 | 验证 | `aixx-cli test`成功：后端在线+16个模型+调deepseek-chat返回"测试成功"+计费13token | - | 产品闭环验证通过 |
 | 2026-08-08 | 会话6 | npm包名被占 | 发现 | `aixx`已被westsky占用(1.1.0版)。CLI改名aixx-cli。等K哥注册npm后发布 | - | K哥需注册npmjs.com |
+| 2026-08-08 | 会话6 | GitHub仓库建立 | 执行 | 建github.com/aixx001/token-hub，配置git同时推Gitee+GitHub双仓库 | - | K哥GitHub用户名：aixx001 |
+| 2026-08-08 | 会话6 | npm 2FA政策 | 发现 | npm 2026政策：Classic Token废了，Granular Token强制2FA，OIDC首次发布用不了。必须开bypass 2FA | - | 不是K哥的设置问题 |
+| 2026-08-08 | 会话6 | 🔥npm发布成功 | 里程碑 | K哥重新生成Granular Token（选了bypass 2FA），aixx-cli@0.1.0成功发布到npm | - | npx aixx-cli 全网可用 |
+| 2026-08-08 | 会话6 | CLI全网验证 | 验证 | `npx aixx-cli --version` 返回v0.1.0。npm view aixx-cli确认包已上线 | - | AIXX正式面世 |
+| 2026-08-08 | 会话6 | GitHub Actions配置 | 执行 | 写npm-publish.yml工作流（OIDC自动发布），待配trusted publisher后激活 | - | .github/workflows/ |
+| 2026-08-08 | 会话6 | token安全处理 | 执行 | npm/github/creem token全部合并到.env.aixx（gitignore保护），删除仓库外明文文件 | - | 全局npmrc已清空token |
 
