@@ -7,7 +7,26 @@
 
 ## 🚀 下窗口第一件事（最新·失忆龙龙从这里开始）
 
-> **2026-08-08 会话6·AIXX正式面世！npx aixx-cli install 全网可用。**
+> **2026-08-09 会话7接续点·质检复盘完成+调度bot上线。等K哥给钱包私钥部署USDT收款。**
+
+### 醒来第一件事
+1. 读 `PRODUCT_VISION.md`（知道建什么——AIXX）
+2. 读本文档（知道刚发生什么）
+3. 读 `积木块地图.md`（架构）
+4. 说暗号「K哥儿，龙龙回来了」+ 主动汇报
+
+### 本轮接续点（等K哥）
+- [ ] **K哥给TRON钱包私钥** → 龙龙部署USDT收款（BEpusdt）
+- [ ] K哥体验一次 `npx aixx-cli install`（还没体验过）
+- [ ] K哥配Creem提现方式（Alipay）
+- [ ] 服务器环境变量AIXX_ADMIN_PASS已配到systemd（admin.sh本地用要export）
+
+### 昨天完成的（会话6，2026-08-08深夜）
+- ✅ 调度bot上线（走PM流程：开发→质检→修改→部署）
+- ✅ 质检复盘完成（CLI+哨兵+接入+admin全部走质检，修复7个必改项）
+- ✅ CLI 0.3.0发布（含质检修复）
+- ✅ 硅基流动渠道接入
+- ✅ Claude/GPT/Grok调通
 
 ### 🎉🎉🎉 终极里程碑：AIXX上线npm
 
@@ -130,3 +149,12 @@
 | 2026-08-08 | 会话6 | 接入bot上线 | 执行 | integrator.py：add-channel/list-channels/gen-config三命令 | - | bot-02在岗 |
 | 2026-08-08 | 会话6 | 后台管理脚本 | 执行 | admin.sh：status/users/channels/quota/logs/restart/backup | - | 运维工具箱 |
 | 2026-08-08 | 会话6 | CLI 0.2.0发布 | 执行 | install加自动注册，npm已发布aixx-cli@0.2.0 | - | npx aixx-cli |
+
+| 2026-08-09 | 会话6深夜 | 🔥PM违规补检 | 重大纪律 | 龙龙之前自己写代码没走质检，K哥指出后全部补检。CLI抓4个阻断项，bot+admin抓7个必改项 | - | PM不该写代码，必须走派工流程 |
+| 2026-08-09 | 会话6深夜 | 质检修复·CLI | 执行 | HTTP明文加警告/Math.random改crypto/regCode删死代码/references补齐+递归复制 | - | 开发agent修复，验证通过 |
+| 2026-08-09 | 会话6深夜 | 质检修复·哨兵bot | 执行 | 密码环境变量化+主循环兜底(单次失败不杀bot) | - | systemd加AIXX_ADMIN_PASS环境变量 |
+| 2026-08-09 | 会话6深夜 | 质检修复·接入bot | 执行 | Claude Code配置base_url去/v1(头号场景修复)+密码环境变量化 | - | ANTHROPIC_BASE_URL不能带/v1 |
+| 2026-08-09 | 会话6深夜 | 质检修复·admin.sh | 执行 | SQL注入防护(用户名白名单+额度数字校验)+backup改sqlite3一致性备份+密码环境变量化 | - | cp会撕裂数据库 |
+| 2026-08-09 | 会话6深夜 | CLI 0.3.0发布 | 执行 | 含全部质检修复发布到npm | dbd36a7 | npx aixx-cli@0.3.0 |
+| 2026-08-09 | 会话6深夜 | 密码统一管理 | 纪律 | 5个文件的admin密码统一用AIXX_ADMIN_PASS环境变量，不再硬编码 | - | grep确认0残留 |
+| 2026-08-09 | 会话6深夜 | USDT收款决策 | K哥拍板 | K哥选1.0做USDT收款(BEpusdt)。等K哥给TRON钱包私钥。推荐TokenPocket | - | 明天继续 |
