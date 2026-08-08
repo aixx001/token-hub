@@ -36,3 +36,6 @@ desktop.ini
 *.log
 logs/
 .cache/
+
+# AIXX key文件
+.env.aixx

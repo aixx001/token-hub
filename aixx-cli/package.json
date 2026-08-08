@@ -1,0 +1,35 @@
+{
+  "name": "aixx-cli",
+  "version": "0.1.0",
+  "description": "AIXX CLI - 让你的AI调用万物。安装：npx aixx-cli install",
+  "type": "module",
+  "bin": {
+    "aixx": "./bin/aixx.js",
+    "aixx-cli": "./bin/aixx.js"
+  },
+  "scripts": {
+    "test": "node bin/aixx.js --version"
+  },
+  "keywords": [
+    "aixx",
+    "ai",
+    "llm",
+    "gateway",
+    "openai",
+    "deepseek",
+    "glm",
+    "kimi",
+    "skill",
+    "agent"
+  ],
+  "author": "AIXX",
+  "license": "ISC",
+  "homepage": "https://gitee.com/kk0803/token-hub",
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/kk0803/token-hub.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

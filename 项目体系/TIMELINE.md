@@ -7,19 +7,40 @@
 
 ## 🚀 下窗口第一件事（最新·失忆龙龙从这里开始）
 
-> **2026-08-08 会话2-5·AIXX定位定型，架构决策沉淀完成。下一步：规划1.0开发。**
+> **2026-08-08 会话6·1.0核心闭环跑通！DeepSeek/GLM/Kimi可调，CLI可用，待发布npm。**
+
+### 🎉 重大里程碑：AIXX第一声啼哭
+```
+2026-08-08 21:00 - 用AIXX的key成功调用deepseek-chat，模型回复正常，计费正常
+                   这标志着"充值→调模型"的核心闭环验证通过
+```
 
 ### 醒来第一件事
 1. 读 `PRODUCT_VISION.md`（知道建什么——已升级为AIXX）
-2. 读本文档（知道刚发生什么）
+2. 读本文档（知道刚发生什么——1.0闭环已通）
 3. 读 `积木块地图.md`（知道架构长啥样）
 4. 读 `上游渠道表.md` + `bot岗位表.md`（知道接下来填什么）
 5. 说暗号「K哥儿，龙龙回来了」+ 主动汇报
 
-### 本轮接续点
-- [ ] 建上游渠道表（一个个填，哨兵bot验证）
-- [ ] 规划1.0开发任务书（变现腿：New-API+渠道+计费+skill）
-- [ ] K哥还在调研更多第三方中转站，待加入上游表
+### 本轮接续点（等K哥）
+- [ ] **K哥注册npm账号** → 给龙龙用户名+选包名（aixx-cli已被占用备选）
+- [ ] **K哥注册/登录GitHub** → 生成Personal Access Token给龙龙
+- [ ] 龙龙用K哥账号发布CLI到npm → `npx aixx-cli install` 正式可用
+- [ ] 接更多第三方中转站（K哥在调研）
+- [ ] 配置指南库（Claude Code/Codex配置教程，参考apiyi/V-API重写）
+
+### 1.0当前可用状态
+- ✅ New-API部署在火山（14.103.27.195:8080，Docker隔离）
+- ✅ root管理员密码已设 `Aixx@2026!K8`，注册已关
+- ✅ Creem收款配置完成（3档产品+API Key+Webhook Secret+合规）
+- ✅ DeepSeek渠道可调（type=43）
+- ✅ GLM渠道可调（type=16）
+- ✅ Kimi渠道可调（type=25）
+- ⚠️ MiniMax渠道配置OK但账号余额不足
+- ✅ AIXX skill草稿完成（aixx-skill/）
+- ✅ AIXX CLI代码完成（aixx-cli/），本地测试通过，待发布npm
+- ⏳ npm发布（等K哥注册）
+- ⏳ GitHub仓库（等K哥账号）
 
 ---
 
@@ -74,4 +95,15 @@
 | 2026-08-08 | 会话5 | 配置指南金矿 | 产品 | K哥提出抓取Claude Code/Codex配置指南。调研确认apiyi/V-API有完整指南可参考（用自己的地址重写） | - | AIXX配置库，1.0手动覆盖热门 |
 | 2026-08-08 | 会话5 | 硅基vs官方成本 | 调研 | DeepSeek官方比硅基便宜4倍（¥3 vs ¥12）。主力模型必须走官方key。硅基只用于免费小模型 | - | 省钱铁律 |
 | 2026-08-08 | 会话5 | 文档沉淀 | 执行 | 更新PRODUCT_VISION/积木块地图/DEVELOPMENT_RULES/TIMELINE，新建上游渠道表/bot岗位表 | 待提交 | 本轮所有决策落地文档 |
+| 2026-08-08 | 会话6 | 服务器部署 | 执行 | 爆单龙龙部署New-API到火山/opt/aixx/（二进制非docker，systemd服务，和爆单网硬隔离）。公网14.103.27.195:8080 | - | aixx用户权限隔离，碰不到爆单网 |
+| 2026-08-08 | 会话6 | 安全防御 | 执行 | root密码Aixx@2026!K8，关闭注册，防止白嫖。爆单龙龙警告8080公网全开 | - | 5步安全防御 |
+| 2026-08-08 | 会话6 | Creem收款配置 | 执行 | 创建3档产品(5/10/25美元)，配API Key+Webhook Secret+payment_compliance确认。checkout链接生成测试通过 | - | webhook回调待真实付款验证 |
+| 2026-08-08 | 会话6 | apikey文件安全 | 执行 | 移进token-hub/.env.aixx，加.gitignore拦截，原明文文件删除 | - | 火山Access Key轮换K哥暂不做（爆单龙龙判断顺序对） |
+| 2026-08-08 | 会话6 | 🔥渠道配置+调通 | 里程碑 | DeepSeek(type=43)+GLM(type=16)+Kimi(type=25)全部调通。用AIXX key调deepseek-chat返回正常回复，计费正确 | - | AIXX第一声啼哭 |
+| 2026-08-08 | 会话6 | MiniMax配置 | 执行 | 渠道配置OK(type=35)，但MiniMax账号余额不足，调用返回insufficient balance | - | K哥充值后即通 |
+| 2026-08-08 | 会话6 | 自用模式开启 | 配置 | 开启SelfUseModeEnabled，解决Kimi/MiniMax的"价格未配置"报错 | - | 自用模式不强制价格配置 |
+| 2026-08-08 | 会话6 | AIXX skill草稿 | 开发 | 写完SKILL.md+QUICKSTART.md+3个references（chat/account/shared）。隐形触发设计，用户不碰key | - | aixx-skill/目录 |
+| 2026-08-08 | 会话6 | AIXX CLI开发 | 开发 | 写完完整CLI（install/config/test/help命令+download/env工具）。本地测试全通过：version/help/config/test都正常 | - | aixx-cli/目录，待发布npm |
+| 2026-08-08 | 会话6 | CLI端到端测试 | 验证 | `aixx-cli test`成功：后端在线+16个模型+调deepseek-chat返回"测试成功"+计费13token | - | 产品闭环验证通过 |
+| 2026-08-08 | 会话6 | npm包名被占 | 发现 | `aixx`已被westsky占用(1.1.0版)。CLI改名aixx-cli。等K哥注册npm后发布 | - | K哥需注册npmjs.com |
 
