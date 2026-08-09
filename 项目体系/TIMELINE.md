@@ -7,7 +7,7 @@
 
 ## 🚀 下窗口第一件事（最新·失忆龙龙从这里开始）
 
-> **2026-08-09 会话7接续点·质检复盘完成+调度bot上线。等K哥给钱包私钥部署USDT收款。**
+> **2026-08-09 会话9收工·Mac端龙龙首次独立作业。sentinel修好重启、Grok换源、豆包生图代理上线。告警系统恢复运行。**
 
 ### 醒来第一件事
 1. 读 `PRODUCT_VISION.md`（知道建什么——AIXX）
@@ -16,17 +16,25 @@
 4. 说暗号「K哥儿，龙龙回来了」+ 主动汇报
 
 ### 本轮接续点（等K哥）
-- [ ] **K哥给TRON钱包私钥** → 龙龙部署USDT收款（BEpusdt）
-- [ ] K哥体验一次 `npx aixx-cli install`（还没体验过）
-- [ ] K哥配Creem提现方式（Alipay）
-- [ ] 服务器环境变量AIXX_ADMIN_PASS已配到systemd（admin.sh本地用要export）
+- [ ] **sentinel已修好重启，需观察24小时**确认告警系统稳定（不轰炸不漏报）
+- [ ] **Server酱额度**：会话8轰炸事故已用完当日5条免费额度，sentinel已识别400停推，**明天(8-10)0点自动恢复**。要观察明天有没有正常告警进来
+- [ ] **豆包视频**还没接（生图已通，视频是异步任务，需另调研New-API/代理支持方式）
+- [ ] K哥体验一次 `npx aixx install`（还没体验过）
+- [ ] 阿里中转站key（K哥会给，验真后接入）
 
-### 昨天完成的（会话6，2026-08-08深夜）
-- ✅ 调度bot上线（走PM流程：开发→质检→修改→部署）
-- ✅ 质检复盘完成（CLI+哨兵+接入+admin全部走质检，修复7个必改项）
-- ✅ CLI 0.3.0发布（含质检修复）
-- ✅ 硅基流动渠道接入
-- ✅ Claude/GPT/Grok调通
+### 会话9完成的（2026-08-09晚，Mac端）
+- ✅ Mac端龙龙首次独立接续（SSH key从PC端跨设备交接到位）
+- ✅ 测试账户负额度修复（aixx_55prvlpo补$5）
+- ✅ 清理违规.bak文件（DEVELOPMENT_RULES红线3，2个历史遗留备份归档到Mac本地）
+- ✅ **sentinel 3个bug全修**（走PM流程：开发→质检通过→部署重启→3个bug真机验证）
+- ✅ **Grok换源**：官方id=7禁用（连不上x.ai），ithinkai grok-4.5接入id=16（比官方grok-2-latest新两个版本，3个友好名grok-latest/grok-2-latest/grok-beta全通）
+- ✅ **豆包生图代理上线**（image-proxy服务，绕过New-API不支持火山生图的洞，id=18改造+计费打通）
+
+### ⚠️ Mac端特有注意事项（跨设备交接必读）
+- 凭证文件 `.env.aixx` 已传到Mac（K哥airdrop）
+- SSH key 已落到 `~/.ssh/aixx_key`（chmod 600，Mac直连可用无需关VPN）
+- `~/.aixx/account.json` 未同步（Mac端用root key测试，见HEALTH_CHECKLIST）
+- 服务器**无git仓库**，代码改动靠scp同步（Mac本地token-hub是git源）
 
 ### 🎉🎉🎉 终极里程碑：AIXX上线npm
 
@@ -197,3 +205,16 @@
 | 2026-08-09 | 会话8 | 🔴告警系统微信轰炸事故 | 故障 | 20:50 sentinel给K哥微信连发多条告警，超出Server酱免费5条限制。根因3个bug：①故障告警太敏感(渠道偶尔超时就报)②log双写导致每条告警发2次③超额后收到400还在狂重试。**已紧急止血：systemctl stop aixx-sentinel**。告警系统需修3个bug才能重启 | - | 告警系统上线≠能用，止血后必须修bug |
 | 2026-08-09 | 会话8 | K哥换Mac继续 | 交接 | K哥太累要换MacBook躺床继续。AIXX项目PC立项Mac没有。方案：①代码已push Gitee(commit 5a957cc)Mac可clone ②创建"新窗口启动指令.md"给Mac端龙龙接进度 ③⚠️.env.aixx和SSH key不进git，需K哥手动U盘/airdrop传Mac | - | 凭证文件不进git是安全红线，但交接时是麻烦点 |
 | 2026-08-09 | 会话8 | 收工归档 | 流程 | K哥要求严格走PM收工Checklist(8条)。龙龙逐条执行 | - | 收工不能拍脑袋，严格走流程 |
+
+| 2026-08-09 | 会话9 | 🔥Mac端龙龙首次独立接续 | 交接 | K哥从PC换Mac继续。龙龙用"新窗口启动指令"读全部文档接进度。SSH key从PC端跨设备交接（PC端龙龙贴出私钥+现场数据）。Mac直连服务器可用（无VPN干扰） | - | 跨设备交接成功，PC/Mac龙龙无缝衔接 |
+| 2026-08-09 | 会话9 | quota单位厘清 | 技术发现 | PC端龙龙说"500万quota≈$5"算错10倍。实测确认：**500000 quota = $5**（即100000 quota=$1）。New-API额度单位是"额度点"，1美元=500000额度点 | - | 给账户补额度按这个比例算 |
+| 2026-08-09 | 会话9 | 测试账户负额度修复 | 执行 | aixx_55prvlpo被刷成-34139 quota(约-$0.34)。补500000(=$5)→465861。其他5个测试账户正常(各50万)。PC端说"测试账户都被刷成负数"是误判，实际只1个 | - | 测试前先查额度，负数会403误判渠道坏 |
+| 2026-08-09 | 会话9 | 清理违规.bak文件 | 纪律 | sentinel目录有2个历史.bak(sentinel.py.bak.20260809201130/03525)，违反DEVELOPMENT_RULES红线3。归档到Mac本地token-hub/归档/旧版备份/后删服务器上的 | - | 用git存档不用.bak，历史遗留要清 |
+| 2026-08-09 | 会话9 | ✅sentinel 3bug全修 | 里程碑 | 走PM流程：开发agent改+质检agent通过。①故障告警加连续失败计数器(_fault_counter阈值3)②log单一出口(删写文件,交systemd重定向)③Server酱400识别当天停推(_wechat_disabled_until明天0点恢复) | - | 详见坑4修复 |
+| 2026-08-09 | 会话9 | sentinel 3bug真机验证 | 验证 | 重启后真机验证：①bug②日志不再双写(每条单出)②bug① ithinkai-Claude抖动不报(连续3次才报),只有真故障(火山生图/Grok)报③bug③ Server酱400立刻识别停推(不再狂刷26分钟)。3个bug全部修复生效 | - | 不信代码信运行证据 |
+| 2026-08-09 | 会话9 | Grok官方连不上根因 | 技术发现 | 官方id=7一直HTTP500。实测：服务器curl api.x.ai直接Connection timed out(12秒)。**根因是火山服务器网络访问不了x.ai**(可能地区限制)，不是key问题。官方Grok在AIXX服务器上无解 | - | 官方海外API在火山服务器可能被墙 |
+| 2026-08-09 | 会话9 | ✅Grok换源ithinkai | 里程碑 | K哥记起ithinkai有grok。实测ithinkai支持7个grok变体(grok-4.2/4.3/4.5/high/medium等)。验真grok-4.5自报"xAI构建"。接入id=16(ithinkai-GPT)：models加grok + model_mapping(grok-latest/grok-2-latest/grok-beta→grok-4.5) + abilities加8条。端到端3个调用名全通 | - | ithinkai是宝库,还有MiniMax-M2.7/gemini-3.5/gpt-5.6待接 |
+| 2026-08-09 | 会话9 | 🔴豆包生图New-API缺陷 | 重大发现 | id=18火山方舟生图报"invalid image request type"。调研实锤：**New-API的type=45只支持对话转发不支持图片生成**。这是New-API已知bug(issue#3127 2026-03提交至今零回复)。火山接口本身好用(直连生图成功)。官方更新日志无Seedream(生图)支持,只有Seedance(视频) | - | New-API对火山多模态支持残缺,生图/视频需自己写代理 |
+| 2026-08-09 | 会话9 | ✅豆包生图代理上线 | 里程碑 | 走PM流程写image-proxy服务(266行Python标准库零依赖)。封装火山/api/v3/images/generations成OpenAI兼容格式。部署systemd(image-proxy.service监听8090)。id=18改造指向代理(type=1+base_url=localhost:8090)。**端到端打通含计费**(生图扣38额度)。质检2项优化(大body上限2MB+火山4xx映射502)已改 | - | 绕过New-API的洞用自写代理,计费仍走New-API |
+| 2026-08-09 | 会话9 | image-proxy双写陷阱 | 技术决策 | image-proxy的log函数同时print+写文件(和sentinel相反)。关键:sentinel的systemd配了StandardOutput=append所以log只print;image-proxy的systemd**不配**append所以log要自己写文件。systemd unit加了醒目注释警告"禁止配append" | - | 同样是log函数,要不要写文件取决于systemd怎么配 |
+| 2026-08-09 | 会话9 | 渠道数到15个 | 状态 | 修复后渠道：1-4国产官方 + 7禁用(Grok官方) + 10/11禁用(apiyi造假) + 12硅基 + 13/14 derouter主 + 15/16 ithinkai备(16含grok) + 17豆包对话 + 18豆包生图(代理)。**11个健康+服务运行** | - | id=7官方Grok禁用,用ithinkai替代 |

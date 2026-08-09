@@ -39,3 +39,10 @@ logs/
 
 # AIXX key文件
 .env.aixx
+
+# 旧版备份归档（本地留档用，不进git）
+归档/
+
+# 备份文件（DEVELOPMENT_RULES红线3：禁止.bak，用git存档）
+*.bak
+*.bak.*

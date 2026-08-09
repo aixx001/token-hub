@@ -22,7 +22,7 @@ import urllib.parse
 import sqlite3
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ============ 配置 ============
 NEWAPI_URL = "http://localhost:8080"
@@ -37,6 +37,15 @@ _cached_token_at = 0  # 登录时间戳
 TOKEN_TTL = 3600  # token有效期（秒），1小时复用一个，避免反复登录
 STATE_FILE = "/opt/aixx/bots/sentinel/channel_states.json"
 LOG_FILE = "/opt/aixx/bots/logs/sentinel.log"
+
+# 故障连续失败计数器：避免渠道偶尔一次超时（网络抖动）就被误报故障（坑：5个渠道同时timeout其实是网络抖动，不是真挂了）
+# key=渠道id(str), value=连续不健康次数。连续N次（FAULT_ALERT_THRESHOLD）才告警
+_fault_counter = {}
+FAULT_ALERT_THRESHOLD = 3  # 连续3次失败才告警
+
+# Server酱额度用完时：到这个时间戳之前停止推送（坑：免费版每天5条，用完返回HTTP 400，之前狂刷400错误26分钟）
+# 0表示不限制。设置为明天0点的时间戳表示"今天额度用完，明天再试"
+_wechat_disabled_until = 0
 
 # ============ 告警配置 ============
 SERVERCHAN_KEY = os.environ.get("AIXX_SERVERCHAN_KEY", "SCT330910T4DJHDPe1Tlm662420YTIcxsY")
@@ -70,15 +79,12 @@ if not ADMIN_PASS:
 
 # ============ 工具函数 ============
 def log(msg, level="INFO"):
-    """记日志"""
+    """记日志（只print，写文件交给systemd的StandardOutput重定向）
+    注：曾经同时print+写文件，导致每条日志在sentinel.log里出现2次（systemd又把print的输出append进同一个文件）。
+    现在单一出口，文件写入完全由systemd负责。LOG_FILE常量保留以对得上systemd配置里的路径。"""
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{level}] {ts} | {msg}"
     print(line, flush=True)
-    try:
-        with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(line + "\n")
-    except Exception:
-        pass
 
 def api_request(path, method="GET", data=None, token=None):
     """调New-API接口"""
@@ -174,6 +180,10 @@ def load_states():
 # ============ 告警系统（三层） ============
 def push_wechat(title, content):
     """通过Server酱推送到K哥微信"""
+    global _wechat_disabled_until
+    # 额度用完时跳过推送（今天不再试，避免狂刷400错误26分钟）
+    if time.time() < _wechat_disabled_until:
+        return False
     try:
         data = urllib.parse.urlencode({"title": title, "desp": content}).encode()
         req = urllib.request.Request(f"https://sctapi.ftqq.com/{SERVERCHAN_KEY}.send", data=data, method="POST")
@@ -185,6 +195,18 @@ def push_wechat(title, content):
             else:
                 log(f"微信推送失败: {result}", "WARN")
                 return False
+    except urllib.error.HTTPError as e:
+        # Server酱额度用完会返回HTTP 400（免费版每天5条）。
+        # 识别到这个状态就今天不再推送，避免每轮都试狂刷400错误。
+        if e.code == 400:
+            # 算明天0点的时间戳（到点自动恢复推送）
+            now = datetime.now()
+            tomorrow_midnight = datetime(now.year, now.month, now.day) + timedelta(days=1)
+            _wechat_disabled_until = tomorrow_midnight.timestamp()
+            log("Server酱额度用完，停止今日推送（明天0点自动恢复）", "WARN")
+            return False
+        log(f"微信推送HTTP异常: {e}", "WARN")
+        return False
     except Exception as e:
         log(f"微信推送异常: {e}", "WARN")
         return False
@@ -290,15 +312,25 @@ def scan_error_logs():
         log(f"扫描错误日志失败（非致命）: {e}", "WARN")
 
 def run_fault_alert(states, prev):
-    """第3层：渠道从健康变故障时告警，恢复时通知"""
+    """第3层：渠道连续多次故障才告警，恢复时通知
+    用连续失败计数器(_fault_counter)防误报：网络抖动导致偶尔一次超时不算故障，
+    要连续FAULT_ALERT_THRESHOLD次（默认3次，即3分钟）都失败才告警。"""
+    global _fault_counter
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     for cid, state in states.items():
         curr_status = state["status"]
         prev_status = prev.get(cid, {}).get("status")
         name = state.get("name", f"渠道{cid}")
 
-        # 健康→故障
-        if curr_status != "healthy" and prev_status == "healthy":
+        # 健康→故障：要连续多次失败才告警（防网络抖动误报）
+        if curr_status != "healthy":
+            # 不健康：累加连续失败计数
+            _fault_counter[cid] = _fault_counter.get(cid, 0) + 1
+            fail_count = _fault_counter[cid]
+            # 不足阈值：只记日志，不告警（给网络抖动一个缓冲）
+            if fail_count < FAULT_ALERT_THRESHOLD:
+                continue
+            # 达到阈值：告警（注意去重逻辑should_alert保留，30分钟窗口防同一故障重复报）
             alert_key = f"fault_{cid}"
             if not should_alert(alert_key):
                 continue
@@ -307,13 +339,15 @@ def run_fault_alert(states, prev):
 
 渠道：{name}（id:{cid}）
 状态：{curr_status}
+连续失败：{fail_count}次
 原因：{state.get('msg', '未知')}
 时间：{now_str}"""
-            log(f"触发故障告警: {name} {curr_status}")
+            log(f"触发故障告警: {name} {curr_status}（连续失败{fail_count}次）")
             push_wechat(title, content)
 
-        # 故障→恢复
+        # 故障→恢复：清零失败计数，通知恢复
         elif curr_status == "healthy" and prev_status and prev_status != "healthy":
+            _fault_counter[cid] = 0  # 恢复健康，清零失败计数
             title = f"✅{name}已恢复"
             content = f"渠道{name}已恢复正常。之前状态：{prev_status}"
             push_wechat(title, content)

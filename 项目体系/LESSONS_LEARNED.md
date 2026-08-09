@@ -152,4 +152,42 @@ sentinel 的 `run_check()` 函数里 `token = login()`，每次巡检都重新�
 
 ---
 
-## 坑5：（暂无，待积累）
+## 🔴 坑5：New-API不支持火山方舟生图——自写代理绕过（架构缺陷）
+
+**时间**：2026-08-09 会话9
+**严重度**：🟡 中（豆包生图功能受阻，用自写代理绕过）
+
+### 事故经过
+火山方舟生图接口直连完全正常（doubao-seedream-5-0-pro返回真JPEG），但接入New-API配成type=45渠道后，调`/v1/images/generations`报错：
+```
+invalid image request type
+```
+
+### 根因
+**New-API的type=45（火山方舟）渠道适配器只实现了对话（chat completions）转发，没实现图片生成（images generations）转发。**
+
+关键证据：
+1. 报错"invalid image request type"是**New-API的relay层自己抛的**，不是火山返回的（火山接口直连好用）
+2. 这是**已知Bug**：New-API issue #3127「火山方舟豆包生图无法使用」，2026-03-05提交，**零评论零PR零回复**，维护者没理
+3. 官方更新日志里火山/Doubao只有Seedance（视频），**没有任何Seedream（生图）支持**
+4. 社区有人fork了new-api（ensonz/volc-adapter）专门解决这个，说明官方不修
+
+### 最终解法（自写代理）
+不依赖New-API，自己写了个薄代理服务`image-proxy`（`/opt/aixx/bots/image-proxy/image_proxy.py`）：
+- 监听8090，接收OpenAI格式`/v1/images/generations`
+- 模型名映射（doubao-seedream→火山真实名）
+- 转发到火山`/api/v3/images/generations`
+- 返回精简的OpenAI格式
+- New-API配一个OpenAI兼容渠道（type=1）指向这个代理（id=18），**鉴权和计费仍由New-API负责**
+
+### 教训
+1. **New-API对火山方舟多模态支持残缺**：对话能用，但生图/视频等高级接口可能不被relay层支持。接火山多模态要先验证New-API支持，不支持就自写代理
+2. **"invalid image request type"这个错误 = New-API不认这种渠道类型支持图片生成**，不是配置问题，别在配置上瞎试
+3. **New-API的issue响应慢**：重要功能缺失别等官方修（#3127晾半年），自己写代理绕过最快
+4. **自写代理设计要点**：薄转发+模型名映射+错误格式标准化+计费仍交New-API（别在代理里重复造计费）
+
+### 相关文件
+- 代理代码：`bots/image-proxy/image_proxy.py`（266行）
+- 代理服务：systemd `image-proxy.service`（监听8090）
+- New-API渠道：id=18（type=1指向localhost:8090）
+- 调研依据：New-API issue #3127 / #2195 / #4705 + 官方更新日志

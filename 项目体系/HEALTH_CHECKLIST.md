@@ -9,18 +9,19 @@
 
 - ✅ 定位清晰（AIXX = AI能力账户/AI的谷歌，三层架构，终极AI银行）
 - ✅ 1.0核心闭环已通（注册→充值→调模型→计费）
-- ✅ 渠道层完整且验真（11渠道，详见下方）
+- ✅ 渠道层完整且验真（15渠道，11个健康，详见下方）
 - ✅ CLI发布npm（aixxai@1.1.0，含质检修复）
-- ✅ bot团队3个在岗（sentinel巡查+告警 / integrator接入 / dispatcher咨询）
+- ✅ bot团队3个在岗 + 1个代理（sentinel巡查+告警 / integrator接入 / dispatcher咨询 / image-proxy生图代理）
 - ✅ 收款双通道（Creem信用卡 + BEpusdt USDT，都部署完）
 - ✅ 主备切换机制（derouter主/ithinkai备，故障自动切，实测通过）
-- ⏳ 告警系统已上线但有3bug待修（sentinel已停，见坑4）
-- ⏳ 豆包全家桶待接入（对话必成，生图/视频需验证New-API支持）
+- ✅ 告警系统3bug已修（sentinel已重启运行，待24小时观察稳定性）
+- ✅ 豆包生图代理上线（image-proxy服务，绕过New-API缺陷，计费打通）
+- ⏳ 豆包视频待接（生图已通，视频异步任务需另调研）
 - ⏳ K哥还没亲自体验过install
 
 ---
 
-## 渠道现状（11个，截至2026-08-09）
+## 渠道现状（15个，截至2026-08-09会话9）
 
 | id | 渠道 | 类型 | 状态 | 角色 |
 |---|---|---|---|---|
@@ -28,16 +29,20 @@
 | 2 | GLM智谱官方 | OpenAI | ✅启用 | 主力国产 |
 | 3 | Kimi官方 | OpenAI | ✅启用 | 主力国产 |
 | 4 | MiniMax官方 | OpenAI | ✅启用 | 主力国产 |
-| 7 | Grok-xai官方 | xAI | ⚠️挂了(HTTP500) | 待禁用，用ithinkai的grok-4.5替代 |
+| 7 | Grok-xai官方 | xAI | ❌禁用(连不上x.ai) | 服务器网络访问不了x.ai，用ithinkai替代 |
 | 10 | apiyi-GPT | OpenAI | ❌禁用 | 造假，永久pass |
 | 11 | apiyi-Claude | Anthropic | ❌禁用 | 造假，永久pass |
 | 12 | 硅基流动 | OpenAI | ✅启用 | 聚合，DeepSeek备选 |
 | 13 | derouter-Claude | Anthropic | ✅启用 priority10 | Claude主 |
 | 14 | derouter-GPT | OpenAI | ✅启用 priority10 | GPT主 |
 | 15 | ithinkai-Claude | Anthropic | ✅启用 priority1 | Claude备胎 |
-| 16 | ithinkai-GPT | OpenAI | ✅启用 priority1 | GPT备胎 |
+| 16 | ithinkai-GPT | OpenAI | ✅启用 priority1 | GPT备胎 + **grok主力**(grok-4.5等) |
+| 17 | 火山方舟-对话 | OpenAI(type45) | ✅启用 | 豆包对话(doubao-seed系列) |
+| 18 | 火山方舟-生图 | OpenAI(type1→代理) | ✅启用 | 豆包生图(指向image-proxy:8090) |
 
-**待接入**：火山方舟-豆包对话/生图（key已测通）、ithinkai的grok-4.5（替代官方坏Grok）
+**健康渠道11个**，禁用4个（官方Grok + apiyi×2造假 + 豆包生图旧配置已改造）
+
+**ithinkai待挖掘**：MiniMax-M2.7 / gemini-3.5 / gpt-5.6 / veo3.1视频（验真后可接，见REFACTOR_BACKLOG）
 
 ---
 
@@ -54,9 +59,10 @@
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| 告警系统3bug | 🔴 待修 | 误报敏感/重复发2次/超额狂发。sentinel已停，修完才重启 |
+| sentinel告警稳定性 | 🟡 观察 | 3bug已修复重启，需观察24小时确认不轰炸不漏报。Server酱8-10日0点恢复额度 |
+| 豆包视频待接 | 🟡 待做 | 生图已通(代理)，视频是异步任务需另调研New-API/代理支持方式 |
 | derouter/ithinkai共享号池风险 | 🟡 关注 | 都可能转售同一上游，注意余额/可用性，多渠道兜底 |
-| Grok官方渠道挂掉 | 🟡 待处理 | id=7一直HTTP500，需禁用+接ithinkai grok-4.5替代 |
+| ithinkai宝库待挖 | 🟢 机会 | MiniMax-M2.7/gemini-3.5/gpt-5.6/veo3.1视频 验真后可接 |
 | 豆包视频2.0+需充值 | 🟢 已知 | 1.0系列可用，2.0/2.5需账户余额≥200元 |
 | Anthropic自己做调度层 | 🟡 关注 | 可能性低(20-25%)，12-18个月窗口 |
 | KOL分销二开New-API | ⏳ 待开发 | 归因服务+永久分润，需Python微服务 |
@@ -67,7 +73,8 @@
 | 强改ZCode setting.json导致崩溃 | 2026-08-09 | ZCode任务/项目丢失，K哥找客服恢复 | 已修复+坑1 |
 | apiyi造假(Claude套DeepSeek) | 2026-08-09 | 用户花Claude钱买DeepSeek | apiyi已pass+坑2 |
 | sentinel session堆积挤爆root | 2026-08-09 | K哥无法登录后台 | 已修复(token缓存+清理)+坑3 |
-| 告警系统微信轰炸 | 2026-08-09 | 骚扰K哥，超Server酱额度 | 已止血(sentinel停)+坑4待修 |
+| 告警系统微信轰炸 | 2026-08-09 | 骚扰K哥，超Server酱额度 | 已修复(3bug全修+sentinel重启)+坑4 |
+| New-API不支持火山生图 | 2026-08-09 | 豆包生图功能受阻 | 已绕过(自写image-proxy代理)+坑5 |
 
 ## 服务器关键信息
 - 服务器：14.103.27.195
