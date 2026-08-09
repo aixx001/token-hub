@@ -1,11 +1,10 @@
 {
-  "name": "aixx-cli",
-  "version": "0.4.0",
-  "description": "AIXX CLI - 让你的AI调用万物。安装：npx aixx-cli install",
+  "name": "aixxai",
+  "version": "1.0.0",
+  "description": "AIXX CLI - 让你的AI调用万物。安装：npx aixxai install",
   "type": "module",
   "bin": {
-    "aixx": "./bin/aixx.js",
-    "aixx-cli": "./bin/aixx.js"
+    "aixx": "./bin/aixx.js"
   },
   "scripts": {
     "test": "node bin/aixx.js --version"

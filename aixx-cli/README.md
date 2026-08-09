@@ -5,13 +5,13 @@
 ## 安装
 
 ```bash
-npx aixx-cli install
+npx aixxai install
 ```
 
 带推荐码安装（推荐人获分润）：
 
 ```bash
-npx aixx-cli install zhangsan
+npx aixxai install zhangsan
 ```
 
 ## 命令
@@ -24,7 +24,7 @@ npx aixx-cli install zhangsan
 | `aixx --version` | 查看版本 |
 | `aixx --help` | 帮助 |
 
-## 当前状态（0.1.0）
+## 当前状态（1.0.0）
 
 - ✅ CLI代码完成，本地测试通过
 - ⏳ 待发布到npm（等注册）

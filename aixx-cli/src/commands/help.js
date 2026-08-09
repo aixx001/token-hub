@@ -17,8 +17,8 @@ export function showHelp(version) {
   aixx --help              显示此帮助
 
 安装示例：
-  aixx install              普通安装
-  aixx install zhangsan     通过张三的推荐码安装（张三获分润）
+  npx aixxai install              普通安装
+  npx aixxai install zhangsan     通过张三的推荐码安装（张三获分润）
 
 关于AIXX：
   AIXX = "AI的谷歌"。装一个skill，agent就能调用全世界的AI能力。
