@@ -6,6 +6,12 @@
  *   1. ZCode      -> ~/.zcode/v2/config.json  （加两个供应商：AIXX-Claude / AIXX-OpenAI）
  *   2. Claude Code-> ~/.claude/settings.json （往env块写 ANTHROPIC_BASE_URL / ANTHROPIC_AUTH_TOKEN）
  *
+ * ⛔ 绝对禁止改写 ZCode 的 setting.json（~/.zcode/v2/setting.json）！
+ *   历史教训（2026-08-09 重大事故，见 token-hub/项目体系/TIMELINE.md 会话7）：
+ *   早期版本曾把 setting.json 的 providerFamilyDomain 改成 "aixx"，而 ZCode
+ *   只接受内置家族名（zai/bigmodel），非法值直接导致 ZCode 崩溃、任务/项目丢失。
+ *   本工具从此只允许操作 ZCode 的 config.json（加供应商），绝不碰 setting.json。
+ *
  * 三条铁律（K哥交代的安全要求）：
  *   1. 写入前必须备份原文件到 ~/.aixx/backups/
  *   2. 只做 JSON 读-改-写，绝不整体覆盖
