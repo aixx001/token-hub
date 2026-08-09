@@ -194,3 +194,6 @@
 | 2026-08-09 | 会话8 | ✅ithinkai备胎接入+主备切换 | 里程碑 | 走PM流程：接入ithinkai(15-Claude/16-GPT)做备胎。配置主备优先级：derouter(13,14)=priority10主，ithinkai(15,16)=priority1备。**PM亲自实测故障切换**：①主正常走derouter(13)②禁用derouter后自动切ithinkai(15)HTTP200③恢复后走回主。渠道挂了自动切备胎，用户无感。**这就是根治** | - | priority数字越大越优先，主挂了自动降级到备 |
 | 2026-08-09 | 会话8 | ✅integrator激活 | 执行 | 创建wrapper脚本/opt/aixx/bots/integrator/run.sh注入AIXX_ADMIN_PASS环境变量。list-channels验证通过(列出11渠道含健康状态)。龙龙以后加新渠道用./run.sh add-channel | - | 运维助手上线 |
 | 2026-08-09 | 会话8 | dispatcher定位明确 | 决策 | dispatcher不是常驻服务(光杆司令无人执行)，定位于龙龙运维咨询工具。实测：recommend"翻译"→deepseek-chat，"分析--pref strongest"→claude-opus-4-8。不介入用户请求路由(New-API自带优先级已覆盖) | - | 智能调度的价值由New-API主备优先级+故障切换承担 |
+| 2026-08-09 | 会话8 | 🔴告警系统微信轰炸事故 | 故障 | 20:50 sentinel给K哥微信连发多条告警，超出Server酱免费5条限制。根因3个bug：①故障告警太敏感(渠道偶尔超时就报)②log双写导致每条告警发2次③超额后收到400还在狂重试。**已紧急止血：systemctl stop aixx-sentinel**。告警系统需修3个bug才能重启 | - | 告警系统上线≠能用，止血后必须修bug |
+| 2026-08-09 | 会话8 | K哥换Mac继续 | 交接 | K哥太累要换MacBook躺床继续。AIXX项目PC立项Mac没有。方案：①代码已push Gitee(commit 5a957cc)Mac可clone ②创建"新窗口启动指令.md"给Mac端龙龙接进度 ③⚠️.env.aixx和SSH key不进git，需K哥手动U盘/airdrop传Mac | - | 凭证文件不进git是安全红线，但交接时是麻烦点 |
+| 2026-08-09 | 会话8 | 收工归档 | 流程 | K哥要求严格走PM收工Checklist(8条)。龙龙逐条执行 | - | 收工不能拍脑袋，严格走流程 |
