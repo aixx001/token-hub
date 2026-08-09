@@ -137,10 +137,13 @@ export async function balance(subArgs) {
 
   console.log('────────────────────────────────────');
   if (isUnlimited) {
-    // 无限额度（一般是管理员key或赠送的不限量key）
-    console.log(`💰 当前余额：♾️  无限额度（不限量）`);
+    // unlimited token（New-API对unlimited_quota=true的token返回1亿作为标记）
+    // 实际是"按账户余额扣费"，不是真的无限。账户余额是注册送的¥5起，用完就停。
+    // billing接口拿不到真实账户余额（它对unlimited token只返回1亿标记），
+    // 所以这里如实告知用户，引导去后台查精确余额。
+    console.log(`💰 计费方式：按账户余额扣费（注册送¥5起，用完需充值）`);
     console.log(`📊 已用额度：¥${usedCny.toFixed(2)}`);
-    console.log(`💳 账户类型：无限量`);
+    console.log(`💡 精确余额请登录AIXX后台查看：${baseUrl.replace(/\/v1$/, '')}`);
   } else {
     // 正常有限额度
     const remainingUsd = Math.max(0, hardLimitUsd - usedUsd);

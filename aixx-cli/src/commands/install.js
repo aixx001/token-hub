@@ -119,8 +119,10 @@ async function autoRegister(baseUrl, refCode) {
     },
     body: JSON.stringify({
       name: 'default',
-      remain_quota: -1,
-      unlimited_quota: true
+      remain_quota: -1,          // -1=跟随用户额度（New-API的"不限量"标记，token用user.quota）
+      unlimited_quota: true      // true=不限量token。注意：这会让billing接口返回hard_limit_usd=1亿
+                                  // （New-API把unlimited token的额度显示成1亿），balance命令里已特殊处理
+                                  // 这个1亿标记，会换算成真实的user.quota来显示，不会误导用户。
     }),
     signal: AbortSignal.timeout(FETCH_TIMEOUT),
   });
@@ -344,12 +346,18 @@ async function testConnectivity(apiKey) {
 function printInstallBroadcast() {
   console.log('═══ AIXX 安装成功，请告诉用户以下信息 ═══');
   console.log('你已成功安装AIXX！送你5元免费额度。');
-  console.log('可用模型：DeepSeek（最便宜）、Claude（最强）、GPT-4o、GLM（中文好）、Kimi（长文本）、Grok');
-  console.log('你可以对我说：');
+  console.log('');
+  console.log('【能用什么】');
+  console.log('  调各种AI模型：DeepSeek（最便宜）、Claude（最强）、GPT、GLM（中文好）、Kimi（长文本）、Grok');
+  console.log('  生成图片：对agent说"帮我用豆包画个猫"');
+  console.log('  🔍 搜索AI skill：对agent说"我要个审美skill""帮我找个开发工具"（AIXX帮你搜GitHub+给推荐）');
+  console.log('');
+  console.log('【怎么用】对agent说话就行，比如：');
   console.log('  - "帮我用Claude翻译这段"');
   console.log('  - "用最便宜的模型写个文案"');
+  console.log('  - "我要个写代码的skill"（搜索AI工具）');
   console.log('  - "我还剩多少额度？"');
-  console.log('余额查询：对agent说"我AIXX还剩多少额度"');
-  console.log('充值：对agent说"我要充值"');
+  console.log('');
+  console.log('【重要】请重启ZCode/Claude Code，并在模型选择里选AIXX供应商，才能开始用。');
   console.log('══════════════════════════════════════════');
 }

@@ -16,12 +16,12 @@
 4. 说暗号「K哥儿，龙龙回来了」+ 主动汇报
 
 ### 本轮接续点（等K哥）
+- [ ] **🔴 K哥去火山云控制台开放8091端口**（安全组规则）。search-proxy服务已部署+ufw已开，但火山云安全组没开，用户agent公网连不上。开了搜索功能就能用
 - [ ] **sentinel已修好重启，需观察24小时**确认告警系统稳定（不轰炸不漏报）
 - [ ] **Server酱额度**：会话8轰炸事故已用完当日5条免费额度，sentinel已识别400停推，**明天(8-10)0点自动恢复**。要观察明天有没有正常告警进来
-- [ ] **搜索功能已上线，需观察实际使用**：用户用skill调"我要个X skill"时的搜索质量，关注DeepSeek评分成本（走New-API计费）和GitHub限流（30次/分钟）
 - [ ] **搜索功能待优化**：预置种子库(awesome-claude-skills等)/HuggingFace弹药仓/CLI的aixx search命令（见REFACTOR_BACKLOG）
+- [ ] **skill安装器**（推广配套）：`npx aixxai install <skill名>` 能装GitHub上的skill（不只AIXX自己的中转skill），配合搜索功能做"AI应用商店"。两条腿推广的关键
 - [ ] **豆包视频**还没接（生图已通，视频是异步任务，需另调研New-API/代理支持方式）
-- [ ] K哥体验一次 `npx aixx install`（还没体验过）
 - [ ] 阿里中转站key（K哥会给，验真后接入）
 
 ### 会话9完成的（2026-08-09晚，Mac端）— 两轮
@@ -236,3 +236,10 @@
 | 2026-08-09 | 会话9 | ✅skill集成搜索能力 | 执行 | 新建references/search.md(触发场景+调用方式+agent处理指南)。补建缺失的chat.md(之前SKILL.md引用但文件不存在)。改SKILL.md触发规则加"找skill/推荐工具"场景+能力索引加search入口。同步到CLI templates(install时下发搜索能力) | - | 顺带修复chat.md缺失的bug |
 | 2026-08-09 | 会话9 | 搜索计费策略定案 | 决策 | K哥拍板搜索**免费**(不扣用户额度)，PRODUCT_VISION的Google模式(免费换流量,执行收钱)。LLM评分走New-API中转用root key(成本可观测)。真正变现靠用户后续"用skill调模型" | - | 搜索免费是战略,变现在执行层 |
 | 2026-08-09 | 会话9 | 搜索MVP边界 | 范围 | 做的:GitHub搜skill类+DeepSeek评分+缓存+两级降级。**不做**:CLI的aixx search命令(v2)/预置种子库抓取(v2)/HuggingFace弹药仓(K哥说先GitHub后HF)/搜索计费/Web界面。质检2项必改(异常不透传+补systemd unit)已修 | - | MVP聚焦核心链路,边界清晰避免范围蔓延 |
+
+| 2026-08-10 | 会话9续 | 🔴搜索公网接入卡点 | 故障 | search-proxy(8091)服务部署了但用户agent公网连不上。根因:火山云安全组只开了8080/8000/80/443，8091没开。ufw开了但云平台层拦着。试过nginx反代80端口但因default_server的if块冲突放弃(恢复原样避免影响爆单网)。**等K哥去火山控制台开8091安全组** | - | 自建服务器的端口要开两层:ufw + 云安全组 |
+| 2026-08-10 | 会话9续 | search-proxy加固 | 执行 | 加IP限流(每IP每分钟10次,防公网开放后被刷GitHub额度)+prompt优化(awesome列表降权,真skill优先)。实测搜索质量提升:数据分析场景awesome-python从匹配60降到20,真skill ECC排第一 | - | 免费功能不鉴权必须配限流 |
+| 2026-08-10 | 会话9续 | 🔥10轮真实场景测试 | 里程碑 | 以纯白用户视角测10轮(清环境重装)。发现并修复4个CLI bug:①bin缺执行位(npx command not found)②install创建token设unlimited_quota=false导致status=4被禁用③balance显示"无限额度"误导④Mac写.bashrc不是.zshrc。全部修复 | - | 不实测不知道,装一遍才发现一堆问题 |
+| 2026-08-10 | 会话9续 | ✅CLI连发5版修bug | 执行 | aixxai@1.2.0(搜索+zsh+播报)→1.2.1(unlimited false错误)→1.2.2(remain 0报错)→1.2.3(回退unlimited true+balance措辞)→1.2.4(bin执行位)。最终1.2.4全链路验证通过:DeepSeek/Claude/Grok/生图/balance全OK | - | token额度机制坑深:unlimited必须true否则remain=0被当耗尽 |
+| 2026-08-10 | 会话9续 | 推广方案探讨 | 战略 | K哥想借力打力:推抖音/TK热门skill→引导npx aixxai install。龙龙指出gap:install装的是AIXX中转skill不是视频里的skill。K哥定"两条腿"(既推AIXX变现,也做skill安装器引流量)。内容模式K哥要全自动(无真人无录屏) | - | 推广逻辑要闭环:搜到→装到,需skill安装器配合 |
+| 2026-08-10 | 会话9续 | balance措辞修复 | 执行 | unlimited token的billing接口返回hard_limit_usd=1亿(New-API的无限标记)。改balance命令:不再显示"♾️无限额度"(误导),改为"按账户余额扣费(注册送¥5起,用完需充值)"+引导去后台查精确余额 | - | New-API的1亿是哨兵值不是真实额度 |

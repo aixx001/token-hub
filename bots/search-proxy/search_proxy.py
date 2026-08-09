@@ -69,6 +69,29 @@ SEARCH_CACHE_DIR = os.environ.get("SEARCH_CACHE_DIR", "/opt/aixx/bots/search-pro
 # 日志文件路径（可被环境变量覆盖，方便本地测试）
 LOG_FILE = os.environ.get("SEARCH_LOG_FILE", "/opt/aixx/bots/logs/search-proxy.log")
 
+# ============ IP 限流（公网开放后防滥用）============
+# 免费功能不鉴权，但防有人刷接口消耗 GitHub 额度（30次/分钟）和 DeepSeek 计费。
+# 真实用户1分钟搜不了几次（打字都要时间），10次/分钟/IP 足够用。
+RATE_LIMIT_PER_MIN = int(os.environ.get("SEARCH_RATE_LIMIT", "10"))  # 每IP每分钟最多N次
+_rate_bucket = {}  # {ip: [(timestamp, ...)]}
+_rate_lock = threading.Lock()
+
+
+def check_rate_limit(client_ip):
+    """检查IP限流。返回True=放行，False=超限。"""
+    now = time.time()
+    window = 60  # 1分钟窗口
+    with _rate_lock:
+        history = _rate_bucket.get(client_ip, [])
+        # 清掉1分钟前的记录
+        history = [t for t in history if now - t < window]
+        if len(history) >= RATE_LIMIT_PER_MIN:
+            _rate_bucket[client_ip] = history
+            return False
+        history.append(now)
+        _rate_bucket[client_ip] = history
+        return True
+
 # 返回结果数量上下限（接口层防御）
 MAX_N = 10
 DEFAULT_N = 5
@@ -319,8 +342,8 @@ def build_score_prompt(query, items):
     返回 (system_prompt, user_prompt)。
     """
     system_prompt = (
-        "你是AI工具评估专家。根据用户需求，评估下面这些GitHub项目哪个最适合，"
-        "给出中文推荐理由和安装方式。"
+        "你是AI skill/工具评估专家。用户想找一个【可直接安装使用】的AI skill或工具。"
+        "根据用户需求，评估下面这些GitHub项目哪个最适合，给出中文推荐理由和安装方式。"
     )
 
     # 拼候选项目清单（按 star 排序，编号方便模型对齐）
@@ -334,13 +357,18 @@ def build_score_prompt(query, items):
 
     lines.append("")
     lines.append(
+        "评分规则（重要）：\n"
+        "- 用户要的是【可直接装的skill/工具】，不是资源汇总\n"
+        "- 仓库名含 awesome 或 纯资源列表（只罗列别人的项目）→ 降权，match_score 不超过 50\n"
+        "- 真正可安装的 skill/工具（有自己的功能，能 clone/装了就用）→ 优先，高分\n"
+        "- 和用户需求贴合度越高分越高，完全不相关给 0-20\n\n"
         "请对每个项目输出JSON（严格按格式，便于解析）：\n"
         "[\n"
         "  {\"name\":\"owner/repo1\", \"match_score\":92, "
         "\"recommendation\":\"中文推荐理由1-2句\", \"install_hint\":\"安装命令或方式\"},\n"
         "  ...\n"
         "]\n"
-        "只输出JSON，不要其他文字。match_score 0-100，越高越匹配用户需求。不相关的给低分。"
+        "只输出JSON，不要其他文字。match_score 0-100。"
     )
 
     user_prompt = "\n".join(lines)
@@ -661,6 +689,12 @@ class SearchProxyHandler(BaseHTTPRequestHandler):
         path = self.path.split("?", 1)[0]
         if path != "/v1/search":
             self._send_openai_error(404, f"路径不存在: {self.path}", "not_found")
+            return
+
+        # 0. IP 限流（公网开放后防滥用，真实用户感知不到）
+        client_ip = self.client_address[0]
+        if not check_rate_limit(client_ip):
+            self._send_openai_error(429, f"搜索太频繁，每分钟限{RATE_LIMIT_PER_MIN}次，请稍后再试", "rate_limit_exceeded")
             return
 
         # 1. 读请求体（带大小上限，抄 image_proxy）

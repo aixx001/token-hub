@@ -46,3 +46,4 @@ logs/
 # 备份文件（DEVELOPMENT_RULES红线3：禁止.bak，用git存档）
 *.bak
 *.bak.*
+*.tgz
