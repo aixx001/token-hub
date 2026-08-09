@@ -1,6 +1,6 @@
 {
   "name": "aixxai",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "AIXX CLI - 让你的AI调用万物。安装：npx aixxai install",
   "type": "module",
   "bin": {
