@@ -117,17 +117,31 @@ async function autoRegister(baseUrl, refCode) {
     throw new Error(`创建Key失败: ${tokenData.message}`);
   }
 
-  // 查key
-  const listResp = await fetch(`${baseUrl.replace(/\/v1$/, '')}/api/token/?p=0&page_size=1`, {
+  // 查key：列表里的 key 是脱敏的（sk-xxxx****xxxx），不能直接用。
+  // 正确做法：先查列表拿 token id，再调 POST /api/token/:id/key 取未脱敏的完整 key。
+  const apiBase = baseUrl.replace(/\/v1$/, '');
+  const listResp = await fetch(`${apiBase}/api/token/?p=0&page_size=1`, {
     headers: { 'Authorization': `Bearer ${userToken}` }
   });
   const listData = await listResp.json();
   const list = listData.data;
   const items = Array.isArray(list) ? list : (list?.items || []);
-  const apiKey = items[0]?.key;
+  const tokenId = items[0]?.id;
+
+  if (!tokenId) {
+    throw new Error('无法获取API Key（找不到刚创建的token）');
+  }
+
+  // 取未脱敏的完整 key（GET 列表会脱敏，必须用这个专用接口）
+  const keyResp = await fetch(`${apiBase}/api/token/${tokenId}/key`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${userToken}` }
+  });
+  const keyData = await keyResp.json();
+  const apiKey = keyData?.data?.key;
 
   if (!apiKey) {
-    throw new Error('无法获取API Key');
+    throw new Error('无法获取API Key（取key接口未返回key）');
   }
 
   console.log(`✅ API Key已创建: sk-${apiKey.slice(0, 8)}...${apiKey.slice(-4)}`);
