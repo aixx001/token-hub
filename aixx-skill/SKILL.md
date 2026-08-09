@@ -20,9 +20,9 @@ metadata:
 
 AIXX = "AI的谷歌"。装一个skill，agent就能：
 - 🤖 **调用各种LLM**：DeepSeek/GLM/Kimi/Claude/GPT等，自动选最优
-- 🎨 **生成图片/视频**（2.0）
+- 🎨 **生成图片**：豆包生图（doubao-seedream）
+- 🔍 **搜索 AI skill/工具**：用户说"我要个审美skill"，AIXX去GitHub搜+给中文推荐理由+安装方式（**已上线**）
 - 📊 **查询数据**：社媒数据(TikHub)、电商数据(JustOne)（2.0）
-- 🔍 **搜索GitHub开源工具**，推荐最优+给安装指南（2.0）
 
 **核心价值**：用户不碰key、不碰参数、不碰文档。一切通过对话。
 
@@ -35,6 +35,7 @@ AIXX = "AI的谷歌"。装一个skill，agent就能：
 - 指定了特定模型的请求（"用Claude翻译""用DeepSeek分析"）
 - 查询用量/花费/余额（"我花了多少""还剩多少额度"）
 - 切换模型（"用最便宜的""切到GPT"）
+- **找/推荐 AI skill/工具/agent**（"我要个审美skill""帮我找个开发工具""推荐个翻译agent"）→ 走搜索（见 search.md）
 
 ### 不触发AIXX的场景（用agent自己能力）
 - 简单闲聊、确认、日常对话
@@ -65,6 +66,11 @@ agent判断：需要AI能力吗？
 - **LLM对话调用**
   - 入口：[`./references/chat.md`](./references/chat.md)
   - 覆盖：翻译、写作、分析、问答、代码等，自动选模型或指定模型
+
+- **搜索 AI skill/工具**（AIXX的"AI的谷歌"）
+  - 入口：[`./references/search.md`](./references/search.md)
+  - 覆盖：找skill、推荐工具、发现新AI能力，给中文推荐理由+安装方式
+  - 场景：用户说"我要个X的skill""帮我找个Y工具""推荐个Z agent"
 
 - **用量查询与账户管理**
   - 入口：[`./references/account.md`](./references/account.md)

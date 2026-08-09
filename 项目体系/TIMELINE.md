@@ -7,7 +7,7 @@
 
 ## 🚀 下窗口第一件事（最新·失忆龙龙从这里开始）
 
-> **2026-08-09 会话9收工·Mac端龙龙首次独立作业。sentinel修好重启、Grok换源、豆包生图代理上线。告警系统恢复运行。**
+> **2026-08-09 会话9收工·Mac端龙龙。2.0流量腿启动——"AI的谷歌"搜索功能上线。用户能搜skill了。**
 
 ### 醒来第一件事
 1. 读 `PRODUCT_VISION.md`（知道建什么——AIXX）
@@ -18,17 +18,27 @@
 ### 本轮接续点（等K哥）
 - [ ] **sentinel已修好重启，需观察24小时**确认告警系统稳定（不轰炸不漏报）
 - [ ] **Server酱额度**：会话8轰炸事故已用完当日5条免费额度，sentinel已识别400停推，**明天(8-10)0点自动恢复**。要观察明天有没有正常告警进来
+- [ ] **搜索功能已上线，需观察实际使用**：用户用skill调"我要个X skill"时的搜索质量，关注DeepSeek评分成本（走New-API计费）和GitHub限流（30次/分钟）
+- [ ] **搜索功能待优化**：预置种子库(awesome-claude-skills等)/HuggingFace弹药仓/CLI的aixx search命令（见REFACTOR_BACKLOG）
 - [ ] **豆包视频**还没接（生图已通，视频是异步任务，需另调研New-API/代理支持方式）
 - [ ] K哥体验一次 `npx aixx install`（还没体验过）
 - [ ] 阿里中转站key（K哥会给，验真后接入）
 
-### 会话9完成的（2026-08-09晚，Mac端）
+### 会话9完成的（2026-08-09晚，Mac端）— 两轮
+**第一轮（sentinel+grok+生图，1.0收尾）**：
 - ✅ Mac端龙龙首次独立接续（SSH key从PC端跨设备交接到位）
 - ✅ 测试账户负额度修复（aixx_55prvlpo补$5）
-- ✅ 清理违规.bak文件（DEVELOPMENT_RULES红线3，2个历史遗留备份归档到Mac本地）
+- ✅ 清理违规.bak文件（DEVELOPMENT_RULES红线3）
 - ✅ **sentinel 3个bug全修**（走PM流程：开发→质检通过→部署重启→3个bug真机验证）
-- ✅ **Grok换源**：官方id=7禁用（连不上x.ai），ithinkai grok-4.5接入id=16（比官方grok-2-latest新两个版本，3个友好名grok-latest/grok-2-latest/grok-beta全通）
+- ✅ **Grok换源**：官方id=7禁用（连不上x.ai），ithinkai grok-4.5接入id=16（3个友好名全通）
 - ✅ **豆包生图代理上线**（image-proxy服务，绕过New-API不支持火山生图的洞，id=18改造+计费打通）
+
+**第二轮（2.0流量腿启动，AI的谷歌）**：
+- ✅ **搜索服务 search-proxy 上线**（走PM流程：开发→质检→部署。GitHub搜skill+DeepSeek评分+两级降级+缓存）
+- ✅ **"AI的谷歌"第一声啼哭**：搜"审美skill"返回ui-ux-pro-max-skill(⭐11.5万)等5个带中文推荐的结果
+- ✅ 多场景验证：开发/翻译/写代码 全部返回高质量推荐（DeepSeek评分合理排序）
+- ✅ skill集成：新建search.md + 补缺失chat.md + 改SKILL.md触发规则
+- ✅ 同步到CLI templates（install时下发搜索能力）
 
 ### ⚠️ Mac端特有注意事项（跨设备交接必读）
 - 凭证文件 `.env.aixx` 已传到Mac（K哥airdrop）
@@ -218,3 +228,11 @@
 | 2026-08-09 | 会话9 | ✅豆包生图代理上线 | 里程碑 | 走PM流程写image-proxy服务(266行Python标准库零依赖)。封装火山/api/v3/images/generations成OpenAI兼容格式。部署systemd(image-proxy.service监听8090)。id=18改造指向代理(type=1+base_url=localhost:8090)。**端到端打通含计费**(生图扣38额度)。质检2项优化(大body上限2MB+火山4xx映射502)已改 | - | 绕过New-API的洞用自写代理,计费仍走New-API |
 | 2026-08-09 | 会话9 | image-proxy双写陷阱 | 技术决策 | image-proxy的log函数同时print+写文件(和sentinel相反)。关键:sentinel的systemd配了StandardOutput=append所以log只print;image-proxy的systemd**不配**append所以log要自己写文件。systemd unit加了醒目注释警告"禁止配append" | - | 同样是log函数,要不要写文件取决于systemd怎么配 |
 | 2026-08-09 | 会话9 | 渠道数到15个 | 状态 | 修复后渠道：1-4国产官方 + 7禁用(Grok官方) + 10/11禁用(apiyi造假) + 12硅基 + 13/14 derouter主 + 15/16 ithinkai备(16含grok) + 17豆包对话 + 18豆包生图(代理)。**11个健康+服务运行** | - | id=7官方Grok禁用,用ithinkai替代 |
+
+| 2026-08-09 | 会话9 | 🔥2.0流量腿启动 | 重大里程碑 | K哥要求做"AI的谷歌"核心功能：用户和agent说"我要个审美skill"，AIXX搜GitHub+给中文推荐+安装方式。龙龙走PM流程：规划(派2个调研小弟摸清现有架构+GitHubAPI)→K哥拍板3决策(只搜skill/免费/含LLM推荐)→开发→质检→部署→测试 | - | PRODUCT_VISION的"先变现腿后流量腿"提前启动第二条腿 |
+| 2026-08-09 | 会话9 | ✅搜索服务search-proxy上线 | 里程碑 | 走PM流程写search_proxy.py(700行Python标准库零依赖)。监听8091，POST /v1/search。链路：query关键词扩展(中→英)→GitHub搜仓库(两级降级:严格topic→宽松)→DeepSeek读README评分(走New-API中转计费)→按匹配度排序→1小时缓存。systemd托管,GITHUB_TOKEN+NEWAPI_API_KEY从.env读 | - | AIXX第二个自研薄服务(继image-proxy)，复用同款架构 |
+| 2026-08-09 | 会话9 | 搜索关键词扩展设计 | 技术决策 | 中文→英文映射表(20个常用:审美→aesthetic/design/ui等)。关键改进：**中文原词不进GitHub query**(GitHub对中文支持差会污染结果)。两级降级：先严格topic(skill/claude-skills/agent等)搜，0结果再宽松搜。MVP实测"审美skill"严格版直接命中275个 | - | 中文不进query+两级降级=命中率+质量双保证 |
+| 2026-08-09 | 会话9 | 🎉AI的谷歌第一声啼哭 | 里程碑 | 搜"审美skill"返回：ui-ux-pro-max-skill(⭐11.5万匹配度98)"专为AI提供UI/UX设计智能"等5个带中文推荐的结果。DeepSeek评分合理(把真贴合的排第一,泛awesome-list降级)。多场景验证:开发/翻译/写代码全部高质量返回 | - | AIXX的差异化兑现:不只给链接,给理由+排序+安装方式 |
+| 2026-08-09 | 会话9 | ✅skill集成搜索能力 | 执行 | 新建references/search.md(触发场景+调用方式+agent处理指南)。补建缺失的chat.md(之前SKILL.md引用但文件不存在)。改SKILL.md触发规则加"找skill/推荐工具"场景+能力索引加search入口。同步到CLI templates(install时下发搜索能力) | - | 顺带修复chat.md缺失的bug |
+| 2026-08-09 | 会话9 | 搜索计费策略定案 | 决策 | K哥拍板搜索**免费**(不扣用户额度)，PRODUCT_VISION的Google模式(免费换流量,执行收钱)。LLM评分走New-API中转用root key(成本可观测)。真正变现靠用户后续"用skill调模型" | - | 搜索免费是战略,变现在执行层 |
+| 2026-08-09 | 会话9 | 搜索MVP边界 | 范围 | 做的:GitHub搜skill类+DeepSeek评分+缓存+两级降级。**不做**:CLI的aixx search命令(v2)/预置种子库抓取(v2)/HuggingFace弹药仓(K哥说先GitHub后HF)/搜索计费/Web界面。质检2项必改(异常不透传+补systemd unit)已修 | - | MVP聚焦核心链路,边界清晰避免范围蔓延 |

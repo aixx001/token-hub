@@ -5,18 +5,20 @@
 
 ---
 
-## 项目整体状态：🟢 健康（1.0闭环已通，渠道扩展中）
+## 项目整体状态：🟢 健康（1.0闭环+2.0流量腿搜索已通）
 
 - ✅ 定位清晰（AIXX = AI能力账户/AI的谷歌，三层架构，终极AI银行）
 - ✅ 1.0核心闭环已通（注册→充值→调模型→计费）
 - ✅ 渠道层完整且验真（15渠道，11个健康，详见下方）
 - ✅ CLI发布npm（aixxai@1.1.0，含质检修复）
-- ✅ bot团队3个在岗 + 1个代理（sentinel巡查+告警 / integrator接入 / dispatcher咨询 / image-proxy生图代理）
+- ✅ bot团队3个在岗 + 2个代理（sentinel/integrator/dispatcher + image-proxy生图 + search-proxy搜索）
 - ✅ 收款双通道（Creem信用卡 + BEpusdt USDT，都部署完）
 - ✅ 主备切换机制（derouter主/ithinkai备，故障自动切，实测通过）
 - ✅ 告警系统3bug已修（sentinel已重启运行，待24小时观察稳定性）
 - ✅ 豆包生图代理上线（image-proxy服务，绕过New-API缺陷，计费打通）
+- ✅ **2.0流量腿：AI搜索上线**（search-proxy，搜skill+DeepSeek推荐+安装方式，"AI的谷歌"已兑现）
 - ⏳ 豆包视频待接（生图已通，视频异步任务需另调研）
+- ⏳ 搜索v2：种子库/HuggingFace弹药仓/CLI的aixx search命令
 - ⏳ K哥还没亲自体验过install
 
 ---
@@ -83,4 +85,7 @@
 - 数据库：`/opt/aixx/new-api/one-api.db`（SQLite）
 - New-API地址：http://14.103.27.195:8080
 - BEpusdt管理：http://14.103.27.195:8000/e1cfe22e46
+- image-proxy（豆包生图）：http://localhost:8090（内网，由New-API id=18中转）
+- search-proxy（AI搜索）：http://localhost:8091/v1/search（内网，免费，由skill调用）
 - 凭证文件：`.env.aixx`（不进git，含所有key）
+- systemd服务：aixx-newapi / aixx-sentinel / image-proxy / search-proxy（4个）

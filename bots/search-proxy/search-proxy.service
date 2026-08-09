@@ -1,0 +1,19 @@
+[Unit]
+Description=AIXX Search Proxy (AI能力搜索, GitHub+DeepSeek, "AI的谷歌")
+After=network.target aixx-newapi.service
+
+[Service]
+Type=simple
+User=aixx
+WorkingDirectory=/opt/aixx/bots/search-proxy
+EnvironmentFile=/opt/aixx/bots/search-proxy/.env
+ExecStart=/usr/bin/python3 /opt/aixx/bots/search-proxy/search_proxy.py
+Restart=always
+RestartSec=5
+# ⚠️ 严禁配 StandardOutput=append:/opt/aixx/bots/logs/search-proxy.log
+# search_proxy.py 的 log 函数自己会写文件（print + 写文件双输出），
+# 如果这里再配 append 会导致每条日志在文件里出现2次（双写，sentinel踩过的坑）。
+# stdout 默认走 journal，用 journalctl -u search-proxy -f 查看。
+
+[Install]
+WantedBy=multi-user.target
