@@ -163,3 +163,7 @@
 | 2026-08-09 | 会话7 | BEpusdt配置 | 执行 | 录入TRON收款地址+USDT汇率(7.2)+易支付对接(PID=1000,AuthToken=对接令牌)。BEpusdt不需要助记词(只监听地址) | - | 安全：私钥不过手 |
 | 2026-08-09 | 会话7 | BEpusdt密码重置 | 执行 | 用reset命令重置管理员凭据。安全入口路径随机。存.env.aixx | - | |
 | 2026-08-09 | 会话7 | AIXX项目简介 | 执行 | 写AIXX项目简介.md给workbuddy推广用（卖点+话术+目标用户） | - | |
+
+| 2026-08-09 | 会话7 | 🔴重大事故 | 故障 | 龙龙强改ZCode的setting.json(providerFamilyDomain=aixx)导致ZCode崩溃+任务/项目丢失。K哥找客服恢复。记入踩坑记录坑1 | - | 闭源软件配置不能强改 |
+| 2026-08-09 | 会话7 | 换底座方案调整 | 决策 | 放弃"自动换底座"(改setting.json太危险)。改为：install配好AIXX供应商→提示用户在UI里手动选一次→之后agent通过skill代调AIXX | - | 安全优先 |
+| 2026-08-09 | 会话7 | 零配置+账户体系上线 | 完成 | 走PM流程：开发→质检打回5项→修改→发布。install自动配ZCode供应商(只改config.json不改setting.json)+播报+balance/models/recharge命令 | be6ba08 | aixxai@1.1.0 |
