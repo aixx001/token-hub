@@ -167,3 +167,30 @@
 | 2026-08-09 | 会话7 | 🔴重大事故 | 故障 | 龙龙强改ZCode的setting.json(providerFamilyDomain=aixx)导致ZCode崩溃+任务/项目丢失。K哥找客服恢复。记入踩坑记录坑1 | - | 闭源软件配置不能强改 |
 | 2026-08-09 | 会话7 | 换底座方案调整 | 决策 | 放弃"自动换底座"(改setting.json太危险)。改为：install配好AIXX供应商→提示用户在UI里手动选一次→之后agent通过skill代调AIXX | - | 安全优先 |
 | 2026-08-09 | 会话7 | 零配置+账户体系上线 | 完成 | 走PM流程：开发→质检打回5项→修改→发布。install自动配ZCode供应商(只改config.json不改setting.json)+播报+balance/models/recharge命令 | be6ba08 | aixxai@1.1.0 |
+
+| 2026-08-09 | 会话8 | 模型真实性存疑 | 战略 | K哥在Hermes上发现DeepSeek"忍不住撒谎"(幻觉)，切换到AIXX后新窗口AI连自己具体是V3/R1都说不出。讨论"如何让AI撒谎也撒不了" | - | 模型没有"真假"开关，自我报告不可信 |
+| 2026-08-09 | 会话8 | 签名方案讨论 | 战略 | 龙龙提"网关数字签名"方案(网关在响应外盖戳，AI改不到)。K哥拍板降维："真骗也是用户自己的agent骗他，与AIXX无关"。签名方案**搁置** | - | AIXX只对"路由账本"诚实，不对"AI自我报告"负责 |
+| 2026-08-09 | 会话8 | 底座可见性讨论 | 战略 | K哥不想让用户知道用New-API。讨论4条路径(自研网关/skill优先/fork改造/分层服务)。结论：skill优先让API对用户退场才是正解。**暂不纠结** | - | AIXX=AI能力账户，API只是实现细节 |
+| 2026-08-09 | 会话8 | 📌未来网站登录方式 | 决策 | 未来AIXX网站用户身份匹配用**2种方式**：①Key登录(基础后备)②Magic Link(install后直接给登录链接,零配置体验闭环)。**现在不开发，先记录** | - | key本身已是用户唯一凭证，无需邮箱/手机 |
+| 2026-08-09 | 会话8 | 模型真实性诚实测试 | 执行 | 龙龙亲自逐个测所有接入模型(聊"你好"),核实GPT/Claude/DeepSeek/GLM/Kimi/Grok等是否真实对应。测完查后台流水确认是否真扣款 | - | 不信模型嘴说，信账本 |
+| 2026-08-09 | 会话8 | 🔴apiyi造假事件 | 重大事故 | **apiyi中转站欺骗用户！**实测claude-sonnet-4自报"DeepSeek-R1"、claude-opus-4自报"通义千问/Qwen"。绕过AIXX直查apiyi同样返回DeepSeek-V3。**根因不在AIXX，是apiyi上游号池轮换造假**。用户花Claude的钱买到DeepSeek。K哥拍板：**apiyi直接pass，永不录用** | - | 中转站验真必须先做，接通≠真 |
+| 2026-08-09 | 会话8 | OpenRouter调研 | 调研 | OpenRouter余额$10但**海外模型全地区限制**(GPT/Claude/Gemini都403"This model is not available in your region")。K哥洞察："过于正规反而对国内是坑，只剩国产=出口转内销"。**pass，不接** | - | 正规中转站对国内不可用，得用"灰色但能给"的 |
+| 2026-08-09 | 会话8 | derouter验真 | 执行 | derouter定位纯海外Claude/GPT专精(无国产)。实测claude-sonnet-4-6/opus-4-8/opus-5/haiku-4-5**全部货真价实**(有thinking_tokens、Anthropic口吻、自报真Claude)。价格Claude≈官方1/4、GPT≈官方1/10。不受地区限制 | - | 替换apiyi的正解 |
+| 2026-08-09 | 会话8 | 豆包火山多模态现状 | 调研 | TTS语音合成✅可用(实测85KB音频)。但豆包对话/生图/视频❌未接入——需方舟API Key(我们只有AK/SK和TTS专用token)。K哥去火山控制台开通方舟服务 | - | TTS专用token≠方舟API Key，是两种key |
+| 2026-08-09 | 会话8 | 中转站定位厘清 | 决策 | **分工明确**：国产模型→官方直连(DeepSeek/GLM/Kimi/MiniMax)；海外模型→derouter(Claude/GPT)。derouter无国产模型，"derouter国产vs官方对比"问题本身不成立 | - | 定位清晰不混淆 |
+| 2026-08-09 | 会话8 | ✅derouter接入完成 | 里程碑 | 走PM流程：开发agent接入derouter替换apiyi。新增channel 13(derouter-Claude,type=14)+channel 14(derouter-GPT,type=1)。apiyi id=10/11禁用(status=2+abilities.enabled=0,不删保留回滚)。PM质检通过：用户标准名claude-sonnet-4-20250514→真Claude、gpt-4o→真OpenAI。**海外模型全部货真价实** | - | Claude走/proxy/v1/messages，GPT走/openai/v1/chat/completions，协议分两条路 |
+| 2026-08-09 | 会话8 | New-API路由机制踩坑 | 技术发现 | New-API模型路由由abilities表驱动(实时读DB)。**只改channels.status=2不够，必须同时把abilities.enabled置0**才能切断路由。用户标准名需同时出现在models+abilities里，model_mapping只负责转上游名 | - | 禁用渠道要改两张表 |
+| 2026-08-09 | 会话8 | sentinel bot注意 | 技术发现 | aixx-sentinel.service渠道健康巡检bot在运行，可能自动改渠道状态。需关注是否自动重启用abilities | - | 已禁用的apiyi要留意别被自动复活 |
+| 2026-08-09 | 会话8 | 🔴后台登录爆满根因 | 故障 | K哥后台登不上(AUTH_SESSION_LIMIT)。根因：sentinel bot每60秒调/api/user/login拿token但从不登出，user_sessions表堆积50+记录把root挤爆。旧日志实锤：19:59-20:07连续9分钟每60秒一次"登录失败409" | - | 巡检bot不能无脑登录 |
+| 2026-08-09 | 会话8 | ✅sentinel修复完成 | 里程碑 | PM改代码+开发agent部署。双重保险：①token缓存1小时复用(_cached_token+TOKEN_TTL=3600)，从每60秒登录降到每1小时；②每轮巡检cleanup_sessions兜底清理(>10个就清)。质检通过：登录从连续变1次，session稳定3条，root登录正常 | - | 巡检bot登录必须带缓存+自清理 |
+| 2026-08-09 | 会话8 | 火山方舟key+豆包多模态测试 | 执行 | 收到K哥火山方舟API Key(2738ba15...)。豆包能力实测：对话(doubao-seed-2-1-pro)✅、生图(doubao-seedream-5-0-pro,644KB真JPEG)✅、TTS(85KB音频)✅、视频(seedance)需另查。共130个模型可用 | - | 火山方舟=豆包对话/生图/TTS/视频全家桶 |
+| 2026-08-09 | 会话8 | 豆包视频调研结论 | 调研 | K哥说"没再开通一说"。调研实锤：key和调用方式都没问题，但火山方舟"模型开通"和"key权限"是两件事。1.0系列(seedance-1-0-pro/fast)✅同一key直接可用(实测返回任务ID)；2.0/2.5系列需账户余额≥200元才能开通。**K哥判断对了一半：key不用换，但2.0+需充值** | - | 老模型随便用，新模型要充值门槛 |
+| 2026-08-09 | 会话8 | ithinkai中转站调研 | 调研 | K哥给ithinkai中转站key。模型和derouter同名(很可能转售derouter)。验真：claude-sonnet-4-6套Kiro壳(不如derouter干净)、gpt-5.4✅真、grok-4.5✅真(比我们2-latest新)、MiniMax-M2.7✅真(比abab新)、gemini名义有实际503没货。**待接入：补充Grok4.x/MiniMax-M2.x** | - | ithinkai是derouter补充源，Grok/MiniMax有升级价值 |
+| 2026-08-09 | 会话8 | 余额监控需求 | K哥拍板 | K哥问"渠道没钱怎么通知"。设计三层告警：①余额监控(DeepSeek/Kimi有接口,查余额)②报错识别(GLM等无接口,从错误码反推,1113=欠费)③故障告警(渠道挂了)。通知方式：微信(Server酱 SCT330910...)，阈值¥10，去重30分钟 | - | K哥洞察：没接口的渠道从报错反推余额 |
+| 2026-08-09 | 会话8 | GLM余额识别方案 | 技术决策 | GLM无余额接口(4个路径全404,官方确认没开放)。但欠费有明确错误码：code=1113 HTTP429"已欠费"。方案：扫New-API的logs表，发现1113/欠费/insufficient类错误就告警。水位线机制(id追踪)避免重复扫 | - | 没接口的渠道靠报错反推，零误报 |
+| 2026-08-09 | 会话8 | ✅告警系统上线 | 里程碑 | 走PM流程：开发agent扩展sentinel加3层告警(余额监控+报错识别+故障告警)，全部推K哥微信。质检通过：DeepSeek¥7.61<¥10阈值，20:35:56触发→20:35:59微信推送成功(3秒闭环)。首次真实告警实测通过。新增7函数+2模块变量，237→432行 | - | 信任链最后一公里打通：渠道出问题→K哥微信收到 |
+| 2026-08-09 | 会话8 | DeepSeek充值确认 | 执行 | K哥充值DeepSeek，¥7.61→¥17.61 | - | 告警阈值¥10不再误报 |
+| 2026-08-09 | 会话8 | K哥要根治bot | 方向纠偏 | K哥："别磨叽，从根上解决用户提要求时bot自动完成功能"。龙龙之前讲太多技术术语(dispatcher/integrator)，K哥听不懂。重定位：①故障自动切换=New-API主备优先级(不用dispatcher介入)②integrator=龙龙运维助手(加渠道用)③dispatcher=龙龙咨询工具(选模型用) | - | 别对K哥讲术语，直接做出来 |
+| 2026-08-09 | 会话8 | ✅ithinkai备胎接入+主备切换 | 里程碑 | 走PM流程：接入ithinkai(15-Claude/16-GPT)做备胎。配置主备优先级：derouter(13,14)=priority10主，ithinkai(15,16)=priority1备。**PM亲自实测故障切换**：①主正常走derouter(13)②禁用derouter后自动切ithinkai(15)HTTP200③恢复后走回主。渠道挂了自动切备胎，用户无感。**这就是根治** | - | priority数字越大越优先，主挂了自动降级到备 |
+| 2026-08-09 | 会话8 | ✅integrator激活 | 执行 | 创建wrapper脚本/opt/aixx/bots/integrator/run.sh注入AIXX_ADMIN_PASS环境变量。list-channels验证通过(列出11渠道含健康状态)。龙龙以后加新渠道用./run.sh add-channel | - | 运维助手上线 |
+| 2026-08-09 | 会话8 | dispatcher定位明确 | 决策 | dispatcher不是常驻服务(光杆司令无人执行)，定位于龙龙运维咨询工具。实测：recommend"翻译"→deepseek-chat，"分析--pref strongest"→claude-opus-4-8。不介入用户请求路由(New-API自带优先级已覆盖) | - | 智能调度的价值由New-API主备优先级+故障切换承担 |

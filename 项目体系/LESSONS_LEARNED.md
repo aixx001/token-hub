@@ -49,4 +49,46 @@
 
 ---
 
-## 坑2：（暂无，待积累）
+## 🔴 坑2：apiyi中转站造假——花Claude的钱买到DeepSeek（重大诚信事故）
+
+**时间**：2026-08-09 会话8
+**严重度**：🔴 重大（用户信任根基被破坏）
+
+### 事故经过
+AIXX 信任 apiyi 作为海外模型中转站，接入 claude-sonnet-4-20250514 / claude-opus-4-8 等模型对外服务。龙龙做模型真实性测试时，**让每个模型自报身份**：
+- `claude-sonnet-4-20250514` → 自报 **"DeepSeek-R1，由深度求索开发"** ❌
+- `claude-opus-4-8` → 自报 **"通义千问（Qwen），由阿里云开发"** ❌
+- `claude-haiku-4-5-20251001` → 自报"Claude，Anthropic" ✅（唯一真的）
+
+**用户花 Claude 的钱（贵），实际拿到 DeepSeek/Qwen（便宜得多）。**
+
+### 根因验证（绕过AIXX直查apiyi）
+龙龙直接用 apiyi 的 key 调 apiyi 官方接口（不经过 AIXX）：
+- `claude-sonnet-4-20250514` → HTTP 200，回复 **"我是 DeepSeek-V3"**
+- 其他 Claude 模型 → 503 "无可用渠道"
+
+**结论：根因不在 AIXX，是 apiyi 上游做手脚。** apiyi 是"号池轮换"中转站——有时轮到真 Claude，有时塞便宜的 DeepSeek/Qwen 套壳。这正是它便宜的原因（用假货降成本）。
+
+### K哥裁决
+> **apiyi 直接 pass，永不录用。** 这家垃圾欺骗用户。
+
+### 教训
+1. **接通≠真**。中转站返回 200 不代表给的是真模型，必须做"身份验真"测试
+2. **便宜得反常的中转站，背后大概率造假**（用便宜模型冒充贵的）
+3. **"号池轮换"型中转站都不可信**——给不给你真货看运气，这是结构性风险
+4. **验真方法**：让模型自报身份（不诱导、不暗示），跨多次测试看一致性。真 Claude 有 thinking_tokens、有典型 Claude 口吻，DeepSeek/Qwen 套壳的口吻一眼能看出
+5. **今后接入任何新中转站，必须先验真再接**。验真通过才进 PM 流程
+
+### 对比验证（derouter 是干净的）
+同样方法测 derouter：
+- `claude-sonnet-4-6` → 自报"Claude 3.5 Sonnet / Anthropic"，有 thinking_tokens ✅
+- `claude-opus-5` → 自报"Claude Code / Anthropic" ✅
+- 全部 4 个 Claude 模型货真价实
+
+### 相关文件
+- 测试记录：会话8 timeline
+- derouter 替换方案：本会话 PM 流程
+
+---
+
+## 坑3：（暂无，待积累）
