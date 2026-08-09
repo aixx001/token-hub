@@ -5,15 +5,21 @@
  * 让你的AI调用万物。
  *
  * 用法：
- *   npx aixx-cli install [推荐码]    安装AIXX skill到本地agent
- *   npx aixx-cli config               配置/查看AIXX
- *   npx aixx-cli test                 测试AIXX是否可用
- *   npx aixx-cli --version            查看版本
+ *   npx aixxai install [推荐码]    安装AIXX skill到本地agent（含零配置）
+ *   npx aixxai config               配置/查看AIXX
+ *   npx aixxai test                 测试AIXX是否可用
+ *   npx aixxai balance              查询账户余额
+ *   npx aixxai models               列出可用模型（分组）
+ *   npx aixxai recharge [金额]      充值引导
+ *   npx aixxai --version            查看版本
  */
 
 import { install } from '../src/commands/install.js';
 import { config } from '../src/commands/config.js';
 import { test } from '../src/commands/test.js';
+import { balance } from '../src/commands/balance.js';
+import { models } from '../src/commands/models.js';
+import { recharge } from '../src/commands/recharge.js';
 import { showHelp, showVersion } from '../src/commands/help.js';
 
 const VERSION = '0.1.0';
@@ -41,6 +47,18 @@ async function main() {
     case 'test':
     case 't':
       await test(subArgs);
+      break;
+    case 'balance':
+    case 'b':
+      await balance(subArgs);
+      break;
+    case 'models':
+    case 'm':
+      await models(subArgs);
+      break;
+    case 'recharge':
+    case 'r':
+      await recharge(subArgs);
       break;
     case '--version':
     case '-v':

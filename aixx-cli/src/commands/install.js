@@ -18,6 +18,7 @@ import { randomInt } from 'crypto';
 import { DEFAULT_BASE_URL } from '../../bin/aixx.js';
 import { downloadSkill } from '../utils/download.js';
 import { setupEnv } from '../utils/env.js';
+import { configureAgents } from '../utils/agentconfig.js';
 
 // skill目录检测
 function detectSkillDirs() {
@@ -52,6 +53,15 @@ function genPassword() {
   return pwd;
 }
 
+// 所有对外请求统一 15 秒超时（AbortSignal.timeout 在 Node 17.3+ 可用，本 CLI 要求 18+）
+const FETCH_TIMEOUT = 15000;
+// 把网络/超时异常的报错信息统一成友好提示
+function friendlyNetErr(err) {
+  return err?.name === 'TimeoutError' || err?.name === 'AbortError'
+    ? '连接超时，请检查网络'
+    : err?.message || String(err);
+}
+
 // 自动注册AIXX账号
 async function autoRegister(baseUrl, refCode) {
   const username = genUsername();
@@ -71,7 +81,8 @@ async function autoRegister(baseUrl, refCode) {
   const regResp = await fetch(regUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(regBody)
+    body: JSON.stringify(regBody),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT),
   });
   const regData = await regResp.json();
 
@@ -86,7 +97,8 @@ async function autoRegister(baseUrl, refCode) {
   const loginResp = await fetch(loginUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT),
   });
   const loginData = await loginResp.json();
 
@@ -109,7 +121,8 @@ async function autoRegister(baseUrl, refCode) {
       name: 'default',
       remain_quota: -1,
       unlimited_quota: true
-    })
+    }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT),
   });
   const tokenData = await tokenResp.json();
 
@@ -121,7 +134,8 @@ async function autoRegister(baseUrl, refCode) {
   // 正确做法：先查列表拿 token id，再调 POST /api/token/:id/key 取未脱敏的完整 key。
   const apiBase = baseUrl.replace(/\/v1$/, '');
   const listResp = await fetch(`${apiBase}/api/token/?p=0&page_size=1`, {
-    headers: { 'Authorization': `Bearer ${userToken}` }
+    headers: { 'Authorization': `Bearer ${userToken}` },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT),
   });
   const listData = await listResp.json();
   const list = listData.data;
@@ -135,7 +149,8 @@ async function autoRegister(baseUrl, refCode) {
   // 取未脱敏的完整 key（GET 列表会脱敏，必须用这个专用接口）
   const keyResp = await fetch(`${apiBase}/api/token/${tokenId}/key`, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${userToken}` }
+    headers: { 'Authorization': `Bearer ${userToken}` },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT),
   });
   const keyData = await keyResp.json();
   const apiKey = keyData?.data?.key;
@@ -147,12 +162,13 @@ async function autoRegister(baseUrl, refCode) {
   console.log(`✅ API Key已创建: sk-${apiKey.slice(0, 8)}...${apiKey.slice(-4)}`);
 
   // 保存账号信息到本地（方便用户找回）
+  // 安全：不存明文密码。注册时密码只用于首次登录拿token，之后用apiKey就够了。
+  // 丢了账号可以重新注册（免费），所以不需要保留密码。
   const aixxDir = join(homedir(), '.aixx');
   if (!existsSync(aixxDir)) mkdirSync(aixxDir, { recursive: true });
   const fullKey = `sk-${apiKey}`;
   writeFileSync(join(aixxDir, 'account.json'), JSON.stringify({
     username,
-    password,
     apiKey: fullKey,  // 存完整key（本地文件，不进git）
     registeredAt: new Date().toISOString(),
     refCode: refCode || null
@@ -187,7 +203,9 @@ export async function install(subArgs) {
   console.log(`✅ 操作系统: ${process.platform}`);
 
   // 2. 获取或创建API Key
+  // 记录key来源，用于后面给出正确的提示（环境变量 / 本地账号）
   let apiKey = process.env.AIXX_API_KEY;
+  let keySource = apiKey ? 'env' : null;
 
   if (!apiKey) {
     // 检查本地是否有已保存的账号
@@ -196,6 +214,7 @@ export async function install(subArgs) {
       try {
         const account = JSON.parse(readFileSync(accountFile, 'utf-8'));
         apiKey = account.apiKey;
+        keySource = 'account';
         console.log(`\n✅ 发现已保存的账号: ${account.username}`);
         console.log(`   使用已保存的API Key`);
       } catch (e) {
@@ -213,21 +232,32 @@ export async function install(subArgs) {
       // 自动注册
       try {
         apiKey = await autoRegister(DEFAULT_BASE_URL, refCode);
+        keySource = 'registered';
       } catch (err) {
-        console.error(`\n❌ 自动注册失败: ${err.message}`);
+        // 网络/超时类异常给友好提示，业务错误（注册/登录/创建key失败）保留原文
+        const msg = /timeout|abort|fetch|network|ECONN|ETIMEDOUT|getaddrinfo/i.test(err.message)
+          ? friendlyNetErr(err)
+          : err.message;
+        console.error(`\n❌ 自动注册失败: ${msg}`);
         console.error('   你可以手动到 AIXX 平台注册后，用已有key重新运行 install。');
         process.exit(1);
       }
     } else if (choice.startsWith('sk-')) {
       // 用户输入已有key
       apiKey = choice;
+      keySource = 'manual';
       console.log('✅ 使用你提供的API Key');
     } else {
       console.error('❌ 无效的输入');
       process.exit(1);
     }
   } else {
-    console.log('\n✅ 已检测到 AIXX_API_KEY 环境变量');
+    // 区分来源：环境变量 vs 本地账号文件
+    if (keySource === 'env') {
+      console.log('\n✅ 已检测到 AIXX_API_KEY 环境变量');
+    } else {
+      console.log('\n✅ 已检测到本地账号文件（~/.aixx/account.json）');
+    }
   }
 
   // 3. 检测/创建skill目录
@@ -264,7 +294,17 @@ export async function install(subArgs) {
     console.log('✅ 环境变量配置完成');
   }
 
-  // 6. 测试连通性
+  // 6. 零配置：自动写本地agent配置（ZCode / Claude Code）
+  // 这是"零配置核心"——让用户安装完就能直接在agent里选到AIXX，不用手动填key。
+  if (apiKey) {
+    try {
+      configureAgents(apiKey);
+    } catch (err) {
+      console.log(`⚠️  agent配置写入异常（不影响安装）: ${err.message}`);
+    }
+  }
+
+  // 7. 测试连通性
   if (apiKey) {
     console.log('\n🔌 测试AIXX连通性...');
     try {
@@ -276,19 +316,40 @@ export async function install(subArgs) {
     }
   }
 
-  // 完成
+  // 8. 安装完成 + 播报（给agent看，让龙龙主动告诉用户装好了）
   console.log('\n╔══════════════════════════════════════════╗');
   console.log('║      🎉 安装完成！                        ║');
   console.log('╚══════════════════════════════════════════╝\n');
-  console.log('现在你可以对自己的agent说：');
-  console.log('  "帮我用deepseek-chat翻译：Hello World"\n');
-  console.log('查询余额：');
-  console.log('  "我AIXX还剩多少额度？"\n');
-  console.log('文档：https://gitee.com/kk0803/token-hub\n');
+  printInstallBroadcast();
 }
 
 async function testConnectivity(apiKey) {
   const url = DEFAULT_BASE_URL.replace(/\/v1$/, '') + '/api/status';
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  try {
+    const resp = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT) });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  } catch (err) {
+    // 网络超时/中断给友好提示，而不是裸的 abort message
+    throw new Error(friendlyNetErr(err));
+  }
+}
+
+/**
+ * 安装完成后的"播报"。
+ * 这段输出是给 agent（龙龙）看的，让 agent 主动转告用户：
+ *   你装好了，送了5元，能调这些模型，可以这样用。
+ *
+ * 格式严格按需求1的模板，方便 agent 识别和转述。
+ */
+function printInstallBroadcast() {
+  console.log('═══ AIXX 安装成功，请告诉用户以下信息 ═══');
+  console.log('你已成功安装AIXX！送你5元免费额度。');
+  console.log('可用模型：DeepSeek（最便宜）、Claude（最强）、GPT-4o、GLM（中文好）、Kimi（长文本）、Grok');
+  console.log('你可以对我说：');
+  console.log('  - "帮我用Claude翻译这段"');
+  console.log('  - "用最便宜的模型写个文案"');
+  console.log('  - "我还剩多少额度？"');
+  console.log('余额查询：对agent说"我AIXX还剩多少额度"');
+  console.log('充值：对agent说"我要充值"');
+  console.log('══════════════════════════════════════════');
 }
